@@ -7,12 +7,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FinGuard AI" />
-  <title>FinGuard AI v4 — Quản trị Tài sản & Sức khỏe Tài chính</title>
+  <title>FinGuard AI v5 — Quản trị Tài sản, Gmail Sync & Sức khỏe Tài chính</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-    .glass { background: rgba(30, 41, 59, 0.78); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.14); }
+    .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.14); }
     .tab-active { color: #38bdf8; border-bottom: 2px solid #38bdf8; font-weight: 600; }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -20,21 +21,35 @@
 </head>
 <body class="min-h-screen pb-24">
 
+  <!-- MÀN HÌNH KHÓA BẢO MẬT PIN (NẾU BẬT) -->
+  <div id="lockScreen" class="fixed inset-0 z-50 hidden bg-slate-950 flex flex-col items-center justify-center p-6">
+    <img id="lockAppIcon" class="w-16 h-16 rounded-2xl shadow-lg mb-4" alt="FinGuard Icon" />
+    <h2 class="text-lg font-bold text-white">FinGuard AI — Bảo mật Dữ liệu</h2>
+    <p class="text-xs text-slate-400 mt-1 mb-5">Nhập mã PIN để mở khóa sổ tài sản & dòng tiền</p>
+    <input id="unlockPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••"
+      class="w-48 text-center tracking-[0.5em] text-xl font-bold bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sky-500"
+      onkeydown="if(event.key==='Enter') verifyPin()" />
+    <button onclick="verifyPin()" class="mt-4 w-48 py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Mở khóa</button>
+  </div>
+
   <!-- HEADER -->
   <header class="sticky top-0 z-30 glass px-3.5 py-2.5 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-2 shrink-0">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center font-extrabold text-slate-950 text-sm shadow">FG</div>
+    <div class="flex items-center gap-2.5 shrink-0">
+      <img id="headerAppIcon" class="w-8 h-8 rounded-xl shadow" alt="FG" />
       <div>
-        <h1 class="font-bold text-sm tracking-tight text-white leading-none">FinGuard AI <span class="text-[10px] text-sky-400 font-normal">v4</span></h1>
-        <p class="text-[10px] text-slate-400 mt-0.5" id="headerMonthLabel">Sức khỏe Tài chính & Dòng tiền</p>
+        <h1 class="font-bold text-sm tracking-tight text-white leading-none">FinGuard AI <span class="text-[10px] text-emerald-400 font-normal">v5</span></h1>
+        <p class="text-[10px] text-slate-400 mt-0.5" id="headerMonthLabel">Quản trị Tài sản & Gmail Sync</p>
       </div>
     </div>
 
     <div class="flex items-center gap-1.5">
-      <button id="installPwaBtn" onclick="triggerPwaInstall()" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold hover:bg-emerald-500/30 transition flex items-center gap-1">
+      <button id="installPwaBtn" onclick="triggerPwaInstall()" class="px-2 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold hover:bg-emerald-500/30 transition flex items-center gap-1">
         📲 <span>Cài App</span>
       </button>
-      <button onclick="openModal('preBuyModal')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-semibold hover:bg-amber-500/30 transition">
+      <button id="gmailSyncBtn" onclick="syncGmailBankEmails()" class="px-2 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-semibold hover:bg-rose-500/30 transition flex items-center gap-1" title="Quét email biến động số dư từ Gmail">
+        ✉️ <span>Quét Gmail</span>
+      </button>
+      <button onclick="openModal('preBuyModal')" class="px-2 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-semibold hover:bg-amber-500/30 transition">
         🛡️ Hỏi mua
       </button>
       <button onclick="openModal('settingsModal')" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-sm">
@@ -45,6 +60,9 @@
 
   <!-- MAIN CONTAINER -->
   <main class="max-w-2xl mx-auto px-3.5 pt-3.5 space-y-3.5">
+
+    <!-- GMAIL SYNC STATUS BANNER -->
+    <div id="gmailSyncBanner" class="hidden glass rounded-2xl p-3.5 border border-rose-500/30 text-xs text-slate-200 space-y-2"></div>
 
     <!-- NET WORTH & PORTFOLIO P&L BANNER -->
     <section class="glass rounded-2xl p-4 bg-gradient-to-r from-slate-900 via-slate-800/90 to-slate-900 border border-sky-500/20">
@@ -73,11 +91,11 @@
     <!-- AI QUICK INPUT BAR -->
     <section class="glass rounded-2xl p-3.5 shadow-lg">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold text-sky-400">✨ Nhập nhanh AI (Tự nhận diện Tiền mặt / CK / Quẹt thẻ)</span>
+        <span class="text-xs font-semibold text-sky-400">✨ Nhập nhanh AI (Ghi chi tiêu hoặc Dán tin nhắn/Email ngân hàng)</span>
         <button onclick="openModal('manualTxModal')" class="text-[11px] text-slate-400 underline hover:text-white">+ Nhập tay</button>
       </div>
       <div class="flex gap-2">
-        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k tiền mặt, ăn tối 350k ck, mua đồ 2tr quẹt thẻ..."
+        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k tiền mặt, hoặc dán nội dung biến động số dư..."
           class="flex-1 bg-slate-900/95 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
           onkeydown="if(event.key==='Enter') handleAiInput()" />
         <button id="aiSendBtn" onclick="handleAiInput()"
@@ -115,7 +133,6 @@
           </button>
         </div>
 
-        <!-- 4 PILLARS OF FINANCIAL HEALTH -->
         <div class="grid grid-cols-2 gap-2.5 pt-1">
           <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
             <div class="flex justify-between text-[11px]">
@@ -165,7 +182,7 @@
         <div id="aiHealthReport" class="hidden p-3 rounded-xl bg-slate-950/90 border border-sky-500/30 text-xs text-slate-200 leading-relaxed"></div>
       </div>
 
-      <!-- PAYMENT METHODS BREAKDOWN (TIỀN MẶT - TÀI KHOẢN - THẺ TÍN DỤNG) -->
+      <!-- PAYMENT METHODS BREAKDOWN -->
       <div class="glass rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Phân bổ Chi tiêu theo Hình thức Thanh toán</h2>
@@ -173,21 +190,18 @@
         </div>
 
         <div class="grid grid-cols-3 gap-2.5">
-          <!-- Tiền mặt -->
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
             <div class="text-[11px] text-emerald-300 font-semibold">💵 Tiền mặt</div>
             <div class="text-sm font-bold text-white mt-1" id="chCashVal">0 ₫</div>
             <div class="text-[10px] text-slate-400 mt-0.5" id="chCashPct">0% tổng chi</div>
           </div>
 
-          <!-- Tiền tài khoản -->
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
             <div class="text-[11px] text-sky-300 font-semibold">🏦 Tài khoản / QR</div>
             <div class="text-sm font-bold text-white mt-1" id="chBankVal">0 ₫</div>
             <div class="text-[10px] text-slate-400 mt-0.5" id="chBankPct">0% tổng chi</div>
           </div>
 
-          <!-- Tiền thẻ tín dụng -->
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-rose-500/20">
             <div class="text-[11px] text-rose-300 font-semibold">💳 Thẻ tín dụng</div>
             <div class="text-sm font-bold text-rose-300 mt-1" id="chCreditVal">0 ₫</div>
@@ -204,7 +218,6 @@
 
       <!-- 3 LEDGERS SUMMARY CARDS -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <!-- Sổ 1: Cá nhân -->
         <div class="glass rounded-2xl p-3.5 border-l-4 border-l-sky-400">
           <div class="text-[11px] text-slate-400 uppercase font-semibold">1. Dòng tiền Cá nhân</div>
           <div class="text-lg font-bold text-white mt-1" id="statPersonalNet">0 ₫</div>
@@ -214,7 +227,6 @@
           </div>
         </div>
 
-        <!-- Sổ 2: Tích sản tháng này -->
         <div class="glass rounded-2xl p-3.5 border-l-4 border-l-emerald-400">
           <div class="text-[11px] text-slate-400 uppercase font-semibold">2. Nạp Đầu tư Tháng này</div>
           <div class="text-lg font-bold text-emerald-400 mt-1" id="statAssetMonth">0 ₫</div>
@@ -224,7 +236,6 @@
           </div>
         </div>
 
-        <!-- Sổ 3: Mua hộ & Công ty -->
         <div class="glass rounded-2xl p-3.5 border-l-4 border-l-amber-400">
           <div class="text-[11px] text-slate-400 uppercase font-semibold">3. Tạm ứng / Mua hộ</div>
           <div class="text-lg font-bold text-amber-400 mt-1" id="statEscrowPending">0 ₫</div>
@@ -273,7 +284,6 @@
         </div>
       </div>
 
-      <!-- ALERTS -->
       <div id="alertsBox" class="space-y-2"></div>
     </div>
 
@@ -540,29 +550,47 @@
     </div>
   </div>
 
-  <!-- MODAL: SETTINGS & IMPORT/EXPORT -->
-  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-4">
+  <!-- MODAL: SETTINGS, SECURITY, GMAIL SYNC & IMPORT/EXPORT -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3.5 my-auto">
       <div class="flex justify-between items-center">
-        <h3 class="font-bold text-white text-sm">⚙️ Cấu hình AI & Dữ liệu</h3>
+        <h3 class="font-bold text-white text-sm">⚙️ Bảo mật, Gmail Sync & Cấu hình</h3>
         <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white">✕</button>
       </div>
-      <div class="space-y-1.5">
-        <label class="text-xs text-slate-300 font-medium">Gemini API Key (Lưu cục bộ trên máy bạn)</label>
-        <input id="cfgApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+
+      <!-- API Key & Security -->
+      <div class="space-y-2 p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+        <div class="text-xs font-semibold text-sky-400">🔐 Bảo mật & Gemini API</div>
+        <div>
+          <label class="text-[10px] text-slate-400">Gemini API Key (Được mã hóa cục bộ trên máy bạn)</label>
+          <input id="cfgApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white mt-0.5" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400">Mã PIN khóa App (Để trống = Tắt)</label>
+            <input id="cfgPin" type="password" inputmode="numeric" maxlength="6" placeholder="VD: 1234" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white mt-0.5" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Google OAuth Client ID (Quét Gmail)</label>
+            <input id="cfgGoogleClientId" type="text" placeholder="xxx.apps.googleusercontent.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white mt-0.5" />
+          </div>
+        </div>
       </div>
+
+      <!-- Budget Targets -->
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="text-[11px] text-slate-400">Lương cố định/tháng</label>
-          <input id="cfgFixedSalary" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+          <input id="cfgFixedSalary" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
         </div>
         <div>
           <label class="text-[11px] text-slate-400">Mục tiêu tích sản/tháng</label>
-          <input id="cfgAssetGoal" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+          <input id="cfgAssetGoal" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
         </div>
       </div>
-      <button onclick="saveSettings()" class="w-full py-2 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu cấu hình</button>
+      <button onclick="saveSettings()" class="w-full py-2 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu cấu hình & Bảo mật</button>
 
+      <!-- Backup & Import -->
       <div class="border-t border-slate-800 pt-3 space-y-2">
         <div class="text-xs font-semibold text-slate-300">Chuyển đổi & Sao lưu Dữ liệu</div>
         <label class="block w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-center text-xs text-sky-300 cursor-pointer border border-slate-700">
@@ -584,24 +612,83 @@
   </div>
 
 <script>
-// ==================== 1. SINGLE-FILE PWA MANIFEST & SERVICE WORKER ====================
+// ==================== 1. HIGH-RES PNG ICON GENERATOR & PWA SETUP ====================
+function generateAppIconPng(size = 512) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Nền bo góc tối sang trọng
+  const r = size * 0.22;
+  ctx.fillStyle = '#0f172a';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, r);
+  ctx.fill();
+
+  // Viền gradient phát sáng
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, '#38bdf8');
+  grad.addColorStop(1, '#34d399');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = size * 0.035;
+  ctx.beginPath();
+  ctx.roundRect(size * 0.05, size * 0.05, size * 0.9, size * 0.9, r * 0.85);
+  ctx.stroke();
+
+  // Biểu đồ cột tích sản bên dưới
+  const bars = [0.22, 0.34, 0.48, 0.65];
+  const barW = size * 0.09;
+  const startX = size * 0.24;
+  const baseY = size * 0.78;
+  bars.forEach((h, idx) => {
+    ctx.fillStyle = idx === 3 ? '#34d399' : 'rgba(56, 189, 248, 0.45)';
+    ctx.beginPath();
+    ctx.roundRect(startX + idx * (barW * 1.45), baseY - size * h * 0.55, barW, size * h * 0.55, size * 0.02);
+    ctx.fill();
+  });
+
+  // Chữ FG sắc nét phía trên
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `800 ${Math.round(size * 0.26)}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('FG', size * 0.5, size * 0.43);
+
+  return canvas.toDataURL('image/png');
+}
+
 (function setupPWA() {
-  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0b1120"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#34d399"/></linearGradient></defs><rect x="48" y="48" width="416" height="416" rx="88" fill="url(#g)"/><text x="256" y="315" font-family="sans-serif" font-weight="800" font-size="190" text-anchor="middle" fill="#0b1120">FG</text></svg>`;
-  const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+  const icon192 = generateAppIconPng(192);
+  const icon512 = generateAppIconPng(512);
+
+  // Gắn icon lên Header & Màn hình khóa
+  document.getElementById('headerAppIcon').src = icon192;
+  document.getElementById('lockAppIcon').src = icon192;
+
+  // Favicon & Apple Touch Icon PNG chuẩn
+  const favicon = document.createElement('link');
+  favicon.rel = 'icon';
+  favicon.type = 'image/png';
+  favicon.href = icon192;
+  document.head.appendChild(favicon);
 
   const appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
-  appleIcon.href = iconUrl;
+  appleIcon.href = icon512;
   document.head.appendChild(appleIcon);
 
+  // Dynamic Web App Manifest với PNG Icons chuẩn
   const manifest = {
-    name: 'FinGuard AI — Sức khỏe Tài chính & Tài sản',
+    name: 'FinGuard AI — Quản trị Tài sản & Chi tiêu',
     short_name: 'FinGuard AI',
     start_url: location.href,
     display: 'standalone',
     background_color: '#0b1120',
     theme_color: '#0b1120',
-    icons: [{ src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }]
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
   };
   const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
   const manifestLink = document.createElement('link');
@@ -647,14 +734,30 @@ if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.
   document.getElementById('installPwaBtn').style.display = 'none';
 }
 
-// ==================== 2. STATE & STORAGE ====================
-const STORAGE_KEY = 'finguard_ai_state_v4';
+// ==================== 2. SECURITY (OBFUSCATION + PIN LOCK) & STORAGE ====================
+const STORAGE_KEY = 'finguard_ai_state_v5';
+
+function encodeSecret(str) {
+  if (!str) return '';
+  return 'ENC:' + btoa(unescape(encodeURIComponent(str.split('').reverse().join(''))));
+}
+
+function decodeSecret(enc) {
+  if (!enc) return '';
+  if (!enc.startsWith('ENC:')) return enc;
+  try {
+    return decodeURIComponent(escape(atob(enc.slice(4)))).split('').reverse().join('');
+  } catch (e) { return ''; }
+}
 
 const defaultState = {
   settings: {
-    apiKey: '',
+    apiKeyEnc: '',
+    pinHash: '',
+    googleClientId: '',
     fixedSalary: 17500000,
-    assetGoal: 4000000
+    assetGoal: 4000000,
+    processedEmailIds: []
   },
   transactions: [
     { id: 1, date: '2026-11-09', amount: 6000000, direction: 'IN', ledger: 'PERSONAL', method: 'BANK', category: 'Tiền lương', memo: 'Lương đợt 1', verified: true },
@@ -664,46 +767,9 @@ const defaultState = {
     { id: 5, date: '2026-11-20', amount: 3000000, direction: 'OUT', ledger: 'ASSET', method: 'BANK', category: 'Đầu tư tích sản', memo: 'Chuyển khoản mua CCQ & Họ', verified: true }
   ],
   assets: [
-    {
-      id: 201,
-      type: 'CASH_SAVING',
-      pricingMode: 'LUMP',
-      name: 'Tiền mặt & Tài khoản thanh toán',
-      ticker: '',
-      qty: 0, buyPrice: 0, currentPrice: 0,
-      invested: 35000000,
-      current: 35000000,
-      lastUpdated: '26/11/2026',
-      note: 'Quỹ thanh khoản & dự phòng'
-    },
-    {
-      id: 202,
-      type: 'FUND',
-      pricingMode: 'UNIT',
-      name: 'Chứng chỉ quỹ DCDS (Mẫu)',
-      ticker: 'DCDS',
-      qty: 200,
-      buyPrice: 78000,
-      currentPrice: 82500,
-      invested: 15600000,
-      current: 16500000,
-      lastUpdated: '26/11/2026',
-      note: 'Tự động nhân SL × Giá NAV'
-    },
-    {
-      id: 203,
-      type: 'GOLD',
-      pricingMode: 'UNIT',
-      name: 'Vàng nhẫn 9999 (Mẫu)',
-      ticker: 'NHAN9999',
-      qty: 2,
-      buyPrice: 7800000,
-      currentPrice: 8450000,
-      invested: 15600000,
-      current: 16900000,
-      lastUpdated: '26/11/2026',
-      note: 'Đơn vị: Chỉ'
-    }
+    { id: 201, type: 'CASH_SAVING', pricingMode: 'LUMP', name: 'Tiền mặt & Tài khoản thanh toán', ticker: '', qty: 0, buyPrice: 0, currentPrice: 0, invested: 35000000, current: 35000000, lastUpdated: '26/11/2026', note: 'Quỹ thanh khoản & dự phòng' },
+    { id: 202, type: 'FUND', pricingMode: 'UNIT', name: 'Chứng chỉ quỹ DCDS (Mẫu)', ticker: 'DCDS', qty: 200, buyPrice: 78000, currentPrice: 82500, invested: 15600000, current: 16500000, lastUpdated: '26/11/2026', note: 'Tự động nhân SL × Giá NAV' },
+    { id: 203, type: 'GOLD', pricingMode: 'UNIT', name: 'Vàng nhẫn 9999 (Mẫu)', ticker: 'NHAN9999', qty: 2, buyPrice: 7800000, currentPrice: 8450000, invested: 15600000, current: 16900000, lastUpdated: '26/11/2026', note: 'Đơn vị: Chỉ' }
   ],
   debts: [
     { id: 101, type: 'INSTALLMENT', title: 'Trả góp Hệ thống NLMT', monthly: 2150000, remainMonths: 4, totalMonths: 12, loanRemain: 0, note: 'Còn 4 kỳ cuối' }
@@ -711,10 +777,30 @@ const defaultState = {
 };
 
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState;
+if (!state.settings.processedEmailIds) state.settings.processedEmailIds = [];
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   renderAll();
+}
+
+function getApiKey() {
+  return decodeSecret(state.settings.apiKeyEnc || state.settings.apiKey || '');
+}
+
+// Kiểm tra khóa PIN lúc mở app
+if (state.settings.pinHash) {
+  document.getElementById('lockScreen').classList.remove('hidden');
+}
+
+function verifyPin() {
+  const entered = document.getElementById('unlockPinInput').value.trim();
+  if (encodeSecret(entered) === state.settings.pinHash) {
+    document.getElementById('lockScreen').classList.add('hidden');
+  } else {
+    alert('Mã PIN không chính xác!');
+    document.getElementById('unlockPinInput').value = '';
+  }
 }
 
 function formatVND(num) {
@@ -744,7 +830,6 @@ function renderAll() {
   const monthPrefix = getCurrentMonthPrefix();
   const monthTxs = state.transactions.filter(t => t.date.startsWith(monthPrefix));
 
-  // 1. Portfolio & Net Worth
   let totalInvested = 0;
   let totalAssets = 0;
   let liquidCashAssets = 0;
@@ -777,7 +862,7 @@ function renderAll() {
   document.getElementById('totalGrossAssets').innerText = formatVND(totalAssets);
   document.getElementById('totalGrossDebts').innerText = formatVND(totalDebts);
 
-  // 2. Ledgers & Payment Methods (CASH / BANK / CREDIT)
+  // Payment Channels & Ledgers
   const pIn = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
   const pOutTxs = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'OUT');
   const pOutDirect = pOutTxs.reduce((s, t) => s + t.amount, 0);
@@ -806,15 +891,14 @@ function renderAll() {
   const stackedBar = document.getElementById('channelStackedBar');
   if (totalChannelOut > 0) {
     stackedBar.innerHTML = `
-      <div class="bg-emerald-400 h-full transition-all" style="width:${cashPct}%" title="Tiền mặt: ${cashPct}%"></div>
-      <div class="bg-sky-400 h-full transition-all" style="width:${bankPct}%" title="Tài khoản: ${bankPct}%"></div>
-      <div class="bg-rose-400 h-full transition-all" style="width:${creditPct}%" title="Thẻ tín dụng: ${creditPct}%"></div>
+      <div class="bg-emerald-400 h-full transition-all" style="width:${cashPct}%"></div>
+      <div class="bg-sky-400 h-full transition-all" style="width:${bankPct}%"></div>
+      <div class="bg-rose-400 h-full transition-all" style="width:${creditPct}%"></div>
     `;
   } else {
     stackedBar.innerHTML = `<div class="bg-slate-700 h-full w-full"></div>`;
   }
 
-  // Sổ 1, 2, 3
   document.getElementById('statPersonalIn').innerText = formatVND(pIn);
   document.getElementById('statPersonalOut').innerText = formatVND(pOutTotal);
   const pNet = pIn - pOutTotal;
@@ -836,7 +920,7 @@ function renderAll() {
   document.getElementById('statEscrowIn').innerText = formatVND(escIn);
   document.getElementById('statEscrowPending').innerText = formatVND(escPending);
 
-  // 3. FINANCIAL HEALTH SCORING ENGINE (4 PILLARS -> 100 POINTS)
+  // Financial Health Score
   const debtRatio = state.settings.fixedSalary > 0 ? Math.round((activeInstMonthly / state.settings.fixedSalary) * 100) : 0;
   const monthlyBurnEst = Math.max(10000000, pOutTotal);
   const liquidityMonths = Number((liquidCashAssets / monthlyBurnEst).toFixed(1));
@@ -878,7 +962,7 @@ function renderAll() {
   document.getElementById('pillarCreditBar').style.width = `${Math.min(100, creditPct)}%`;
   document.getElementById('pillarCreditBar').className = `h-full ${creditPct > 40 ? 'bg-rose-500' : 'bg-purple-400'}`;
 
-  // 4. Guardrails Progress
+  // Guardrails
   const maxInstCap = state.settings.fixedSalary * 0.25;
   const instPct = Math.min(100, Math.round((activeInstMonthly / maxInstCap) * 100));
   document.getElementById('installmentCapText').innerText = `${formatVND(activeInstMonthly)} / ${formatVND(maxInstCap)}`;
@@ -904,7 +988,7 @@ function renderAll() {
   document.getElementById('funCapText').innerText = `${formatVND(funSpent)} / 150.000 ₫`;
   document.getElementById('funCapBar').style.width = `${funPct}%`;
 
-  // 5. Alerts
+  // Alerts
   const alertsBox = document.getElementById('alertsBox');
   alertsBox.innerHTML = '';
   if (creditSpent > 0) {
@@ -1079,22 +1163,25 @@ function renderHistory() {
   `).join('');
 }
 
-// ==================== 4. GEMINI AI ENGINE (DIAGNOSIS + PARSING + LIVE PRICE) ====================
+// ==================== 4. FIXED GEMINI API ENGINE (NO JSON+SEARCH CONFLICT) ====================
 async function callGemini(promptText, isJson = false, useSearch = false) {
-  const apiKey = state.settings.apiKey;
+  const apiKey = getApiKey();
   if (!apiKey) {
     alert('Vui lòng bấm biểu tượng ⚙️ góc phải để nhập Gemini API Key trước!');
     openModal('settingsModal');
     return null;
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
   const body = {
-    contents: [{ parts: [{ text: promptText }] }],
-    generationConfig: isJson ? { responseMimeType: "application/json" } : {}
+    contents: [{ parts: [{ text: promptText }] }]
   };
+
+  // SỬA LỖI BẢO MẬT/API: Không gửi responseMimeType: "application/json" khi bật google_search
   if (useSearch) {
     body.tools = [{ google_search: {} }];
+  } else if (isJson) {
+    body.generationConfig = { responseMimeType: "application/json" };
   }
 
   const res = await fetch(url, {
@@ -1102,55 +1189,29 @@ async function callGemini(promptText, isJson = false, useSearch = false) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
+
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (!res.ok || data.error) {
+    throw new Error(data.error ? data.error.message : `HTTP ${res.status}`);
+  }
+  if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+    throw new Error('AI không trả về dữ liệu văn bản hợp lệ.');
+  }
   return data.candidates[0].content.parts[0].text;
 }
 
-async function runAiHealthDiagnosis() {
-  const btn = document.getElementById('aiHealthBtn');
-  const box = document.getElementById('aiHealthReport');
-  btn.disabled = true;
-  btn.innerText = '⏳ Đang phân tích...';
-
-  const score = document.getElementById('healthScoreVal').innerText;
-  const netWorth = document.getElementById('netWorthValue').innerText;
-  const totalAssets = document.getElementById('totalGrossAssets').innerText;
-  const totalDebts = document.getElementById('totalGrossDebts').innerText;
-  const pIn = document.getElementById('statPersonalIn').innerText;
-  const pOut = document.getElementById('statPersonalOut').innerText;
-  const assetMonth = document.getElementById('statAssetMonth').innerText;
-  const cashSpent = document.getElementById('chCashVal').innerText;
-  const bankSpent = document.getElementById('chBankVal').innerText;
-  const creditSpent = document.getElementById('chCreditVal').innerText;
-
-  const prompt = `
-Đóng vai CFO cá nhân phân tích Sức khỏe Tài chính của chủ nhân dựa trên số liệu thực tế hiện tại:
-- Điểm Sức khỏe Tài chính: ${score}/100
-- Tài sản ròng (Net Worth): ${netWorth} (Tổng Tài sản: ${totalAssets} | Tổng Dư nợ: ${totalDebts})
-- Dòng tiền tháng này: Thu ${pIn} | Chi sinh hoạt + Trả góp ${pOut} | Nạp đầu tư tích sản ${assetMonth}
-- Phân bổ kênh chi tiêu tháng: Tiền mặt ${cashSpent} | Tiền tài khoản ${bankSpent} | Quẹt thẻ tín dụng ${creditSpent}.
-
-Hãy đưa ra bản chẩn đoán sắc bén trong 4 gạch đầu dòng ngắn gọn:
-1. **Điểm mạnh nhất** trong cấu trúc tài sản & dòng tiền hiện tại.
-2. **Rủi ro tiềm ẩn** (về áp lực trả góp, dư nợ quẹt thẻ tín dụng chờ sao kê, hoặc thanh khoản).
-3. **Kỷ luật kênh thanh toán** (nên ưu tiên Tiền tài khoản/Tiền mặt hay hạn chế quẹt thẻ ở khoản nào).
-4. **Hành động tối ưu ngay trong tuần này** để nâng điểm Sức khỏe Tài chính.`;
-
-  try {
-    const reply = await callGemini(prompt, false, false);
-    if (reply) {
-      box.classList.remove('hidden');
-      box.innerHTML = reply.replace(/\n/g, '<br>');
-    }
-  } catch (err) {
-    alert('Lỗi AI: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerText = '🩺 AI Chẩn đoán';
+// Trích xuất JSON an toàn từ văn bản có kèm Search Grounding
+function extractJsonObject(rawText) {
+  const cleaned = rawText.replace(/```json|```/gi, '').trim();
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1) {
+    return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
   }
+  return JSON.parse(cleaned);
 }
 
+// Tra cứu giá thị trường Online (Đã fix lỗi Google Search Grounding)
 async function syncMarketPricesOnline() {
   const unitAssets = state.assets.filter(a => a.pricingMode === 'UNIT');
   if (unitAssets.length === 0) {
@@ -1160,11 +1221,11 @@ async function syncMarketPricesOnline() {
   const btn = document.getElementById('syncPricesBtn');
   const statusBox = document.getElementById('marketSyncStatus');
   btn.disabled = true;
-  btn.innerText = '⏳ Đang check giá...';
+  btn.innerText = '⏳ Đang quét giá...';
 
   const itemsQuery = unitAssets.map(a => `- ID ${a.id}: ${a.name} (Mã: ${a.ticker || a.name}, Loại: ${a.type})`).join('\n');
   const prompt = `
-Hãy tra cứu giá thị trường mới nhất hôm nay tại Việt Nam (đơn vị VNĐ) cho danh sách tài sản sau:
+Sử dụng Google Search để tra cứu giá thị trường mới nhất hôm nay tại Việt Nam (đơn vị VNĐ) cho các mã sau:
 ${itemsQuery}
 
 Quy tắc đơn vị giá:
@@ -1172,43 +1233,183 @@ Quy tắc đơn vị giá:
 - Chứng chỉ quỹ (FUND): giá NAV/CCQ mới nhất tính bằng VNĐ (VD: 82500).
 - Vàng (GOLD): giá mua vào/bán ra tính theo 1 CHỈ vàng VNĐ (VD: 8450000).
 
-Chỉ trả về JSON thuần túy theo định dạng:
+Hãy trả lời bằng duy nhất một khối JSON hợp lệ theo mẫu sau (không giải thích thêm ngoài JSON):
 {
   "prices": [
-    { "id": number, "price": number, "source_note": "string ngắn gọn giá & ngày" }
+    { "id": 202, "price": 82500, "source_note": "NAV mới nhất" }
   ],
-  "summary": "Tóm tắt biến động thị trường hôm nay trong 1-2 câu"
+  "summary": "Tóm tắt ngắn biến động giá hôm nay"
 }`;
 
   try {
-    const raw = await callGemini(prompt, true, true);
+    const raw = await callGemini(prompt, false, true);
     if (!raw) return;
-    const cleanJson = raw.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(cleanJson);
+    const parsed = extractJsonObject(raw);
     const todayStr = new Date().toLocaleDateString('vi-VN');
 
     let updatedCount = 0;
-    parsed.prices.forEach(p => {
-      const target = state.assets.find(a => a.id == p.id);
-      if (target && p.price > 0) {
-        target.currentPrice = Number(p.price);
-        target.lastUpdated = todayStr;
-        if (p.source_note) target.note = p.source_note;
-        updatedCount++;
-      }
-    });
+    if (Array.isArray(parsed.prices)) {
+      parsed.prices.forEach(p => {
+        const target = state.assets.find(a => String(a.id) === String(p.id));
+        if (target && Number(p.price) > 0) {
+          target.currentPrice = Number(p.price);
+          target.lastUpdated = todayStr;
+          if (p.source_note) target.note = p.source_note;
+          updatedCount++;
+        }
+      });
+    }
 
     saveState();
     statusBox.classList.remove('hidden');
-    statusBox.innerHTML = `✅ Đã cập nhật giá thị trường cho <b>${updatedCount}</b> mã đầu tư (${todayStr}).<br><span class="text-slate-300">${parsed.summary}</span>`;
+    statusBox.innerHTML = `✅ Đã cập nhật giá thị trường cho <b>${updatedCount}</b> mã đầu tư (${todayStr}).<br><span class="text-slate-300">${parsed.summary || ''}</span>`;
   } catch (err) {
-    alert('Không thể tự động lấy giá online: ' + err.message);
+    statusBox.classList.remove('hidden');
+    statusBox.innerHTML = `⚠️ Không thể quét giá tự động (${err.message}).<br>Mẹo: Kiểm tra lại API Key trong ⚙️ hoặc bấm <b>"✏️ Cập nhật giá / SL"</b> trên từng mã để nhập tay.`;
   } finally {
     btn.disabled = false;
     btn.innerText = '🔄 Check giá Online';
   }
 }
 
+// ==================== 5. TỰ ĐỘNG QUÉT EMAIL GMAIL BIẾN ĐỘNG SỐ DƯ ====================
+function syncGmailBankEmails() {
+  const clientId = (state.settings.googleClientId || '').trim();
+  const banner = document.getElementById('gmailSyncBanner');
+
+  if (!clientId) {
+    banner.classList.remove('hidden');
+    banner.innerHTML = `
+      <div class="flex justify-between items-start">
+        <b class="text-rose-300">✉️ Kích hoạt Quét Email Gmail Biến động Số dư</b>
+        <button onclick="document.getElementById('gmailSyncBanner').classList.add('hidden')" class="text-slate-400">✕</button>
+      </div>
+      <p class="text-slate-300">Để ứng dụng tự động đọc email biến động số dư (Agribank, VCB, TCB, VPBank, BIDV...) trực tiếp trên trình duyệt mà không cần máy chủ trung gian:</p>
+      <ol class="list-decimal pl-4 space-y-1 text-slate-300 text-[11px]">
+        <li>Tạo <b>OAuth 2.0 Client ID (Web application)</b> miễn phí trên Google Cloud Console (bật <b>Gmail API</b> và thêm URL GitHub Pages của bạn vào <i>Authorized JavaScript origins</i>).</li>
+        <li>Dán <b>Client ID</b> vào mục <b>⚙️ Cài đặt</b> rồi bấm lại nút <b>Quét Gmail</b>.</li>
+        <li><b>Hoặc dùng ngay không cần OAuth:</b> Copy nội dung email biến động số dư dán thẳng vào ô <b>"✨ Nhập nhanh AI"</b> phía dưới, AI sẽ tự bóc tách ngay lập tức!</li>
+      </ol>
+    `;
+    return;
+  }
+
+  if (typeof google === 'undefined' || !google.accounts) {
+    return alert('Thư viện Google Identity đang tải, vui lòng thử lại sau 2 giây!');
+  }
+
+  const btn = document.getElementById('gmailSyncBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ <span>Đang kết nối...</span>';
+
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    callback: async (tokenResponse) => {
+      if (tokenResponse.error) {
+        btn.disabled = false;
+        btn.innerHTML = '✉️ <span>Quét Gmail</span>';
+        return alert('Lỗi đăng nhập Google: ' + tokenResponse.error);
+      }
+      await fetchAndParseBankEmails(tokenResponse.access_token);
+      btn.disabled = false;
+      btn.innerHTML = '✉️ <span>Quét Gmail</span>';
+    }
+  });
+  tokenClient.requestAccessToken({ prompt: '' });
+}
+
+async function fetchAndParseBankEmails(accessToken) {
+  const banner = document.getElementById('gmailSyncBanner');
+  banner.classList.remove('hidden');
+  banner.innerHTML = `⏳ Đang tìm kiếm email biến động số dư ngân hàng trong 7 ngày gần nhất...`;
+
+  try {
+    // Tìm email từ các ngân hàng phổ biến tại Việt Nam trong 7 ngày qua
+    const query = encodeURIComponent('newer_than:7d (Agribank OR Vietcombank OR Techcombank OR VPBank OR BIDV OR MB OR ACB OR TPBank OR "biến động số dư" OR "giao dịch thẻ")');
+    const listRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${query}&maxResults=15`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const listData = await listRes.json();
+    if (!listData.messages || listData.messages.length === 0) {
+      banner.innerHTML = `✅ Đã quét hộp thư Gmail: Không có email biến động số dư mới trong 7 ngày qua.`;
+      return;
+    }
+
+    const newSnippets = [];
+    for (const msg of listData.messages) {
+      if (state.settings.processedEmailIds.includes(msg.id)) continue;
+      const msgRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=Date`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const msgData = await msgRes.json();
+      const subj = msgData.payload?.headers?.find(h => h.name === 'Subject')?.value || '';
+      const dateStr = msgData.payload?.headers?.find(h => h.name === 'Date')?.value || '';
+      newSnippets.push({
+        emailId: msg.id,
+        dateHeader: dateStr,
+        subject: subj,
+        snippet: msgData.snippet || ''
+      });
+    }
+
+    if (newSnippets.length === 0) {
+      banner.innerHTML = `✅ Tất cả email biến động số dư gần đây đều đã được đồng bộ trước đó.`;
+      return;
+    }
+
+    const prompt = `
+Bạn là FinGuard AI. Hãy đọc danh sách tóm tắt email ngân hàng dưới đây, lọc ra ĐÚNG các email thông báo biến động số dư / giao dịch thẻ thực tế (bỏ qua email quảng cáo, khuyến mãi) và chuyển thành JSON giao dịch:
+
+Danh sách email:
+${JSON.stringify(newSnippets)}
+
+Trả về JSON đúng schema:
+{
+  "transactions": [
+    {
+      "emailId": "string",
+      "date": "YYYY-MM-DD",
+      "amount": number,
+      "direction": "IN" | "OUT",
+      "ledger": "PERSONAL" | "ASSET" | "ESCROW",
+      "method": "BANK" | "CREDIT",
+      "category": "string",
+      "memo": "string"
+    }
+  ]
+}`;
+
+    const raw = await callGemini(prompt, true, false);
+    const parsed = JSON.parse(raw);
+
+    let added = 0;
+    (parsed.transactions || []).forEach(tx => {
+      state.transactions.push({
+        id: Date.now() + Math.random(),
+        date: tx.date || new Date().toISOString().split('T')[0],
+        amount: Number(tx.amount),
+        direction: tx.direction,
+        ledger: tx.ledger || 'PERSONAL',
+        method: tx.method || 'BANK',
+        category: tx.category || 'Giao dịch Ngân hàng',
+        memo: `[Gmail] ${tx.memo}`,
+        verified: true
+      });
+      added++;
+    });
+
+    // Đánh dấu tất cả email đã quét để không bao giờ trùng
+    newSnippets.forEach(s => state.settings.processedEmailIds.push(s.emailId));
+    saveState();
+
+    banner.innerHTML = `✅ Đã quét <b>${newSnippets.length}</b> email mới và tự động ghi nhận <b>${added}</b> giao dịch biến động số dư vào sổ!`;
+  } catch (err) {
+    banner.innerHTML = `⚠️ Lỗi khi đọc Gmail: ${err.message}`;
+  }
+}
+
+// ==================== 6. AI INPUT & PRE-PURCHASE ====================
 async function handleAiInput() {
   const inputEl = document.getElementById('aiInput');
   const text = inputEl.value.trim();
@@ -1227,12 +1428,13 @@ Bạn là FinGuard AI — CFO cá nhân quản trị dòng tiền theo 3 sổ đ
   * ASSET: Mua/Nạp đầu tư tích sản: CCQ (FUND), Cổ phiếu (STOCK), Vàng (GOLD), Đất/Nhà (REAL_ESTATE), Xe/Hạ tầng (VEHICLE), Tiết kiệm/Chơi họ (CASH_SAVING).
   * ESCROW: Mua hộ đồ cho người khác, tạm ứng chi phí công ty.
 - Hình thức thanh toán (method):
-  * CASH: Tiền mặt (nếu nhắc tới "tiền mặt", "rút tiền", "trả tiền mặt").
-  * CREDIT: Thẻ tín dụng (nếu nhắc tới "quẹt thẻ", "thẻ tín dụng", "visa", "mastercard", "trả góp thẻ").
-  * BANK: Tiền tài khoản ngân hàng / chuyển khoản / QR (mặc định nếu không nói rõ).
+  * CASH: Tiền mặt.
+  * CREDIT: Thẻ tín dụng.
+  * BANK: Tiền tài khoản ngân hàng / chuyển khoản / QR (mặc định).
 
 Hôm nay là: ${today}.
-Câu nhập liệu: "${text}"
+Người dùng có thể nhập câu nói tự nhiên HOẶC dán nguyên văn tin nhắn/email biến động số dư ngân hàng. Hãy bóc tách chính xác:
+"${text}"
 
 Trả về JSON đúng schema:
 {
@@ -1343,6 +1545,50 @@ Trả về JSON đúng schema:
   }
 }
 
+async function runAiHealthDiagnosis() {
+  const btn = document.getElementById('aiHealthBtn');
+  const box = document.getElementById('aiHealthReport');
+  btn.disabled = true;
+  btn.innerText = '⏳ Đang phân tích...';
+
+  const score = document.getElementById('healthScoreVal').innerText;
+  const netWorth = document.getElementById('netWorthValue').innerText;
+  const totalAssets = document.getElementById('totalGrossAssets').innerText;
+  const totalDebts = document.getElementById('totalGrossDebts').innerText;
+  const pIn = document.getElementById('statPersonalIn').innerText;
+  const pOut = document.getElementById('statPersonalOut').innerText;
+  const assetMonth = document.getElementById('statAssetMonth').innerText;
+  const cashSpent = document.getElementById('chCashVal').innerText;
+  const bankSpent = document.getElementById('chBankVal').innerText;
+  const creditSpent = document.getElementById('chCreditVal').innerText;
+
+  const prompt = `
+Đóng vai CFO cá nhân phân tích Sức khỏe Tài chính của chủ nhân dựa trên số liệu thực tế hiện tại:
+- Điểm Sức khỏe Tài chính: ${score}/100
+- Tài sản ròng (Net Worth): ${netWorth} (Tổng Tài sản: ${totalAssets} | Tổng Dư nợ: ${totalDebts})
+- Dòng tiền tháng này: Thu ${pIn} | Chi sinh hoạt + Trả góp ${pOut} | Nạp đầu tư tích sản ${assetMonth}
+- Phân bổ kênh chi tiêu tháng: Tiền mặt ${cashSpent} | Tiền tài khoản ${bankSpent} | Quẹt thẻ tín dụng ${creditSpent}.
+
+Hãy đưa ra bản chẩn đoán sắc bén trong 4 gạch đầu dòng ngắn gọn:
+1. **Điểm mạnh nhất** trong cấu trúc tài sản & dòng tiền hiện tại.
+2. **Rủi ro tiềm ẩn** (về áp lực trả góp, dư nợ quẹt thẻ tín dụng chờ sao kê, hoặc thanh khoản).
+3. **Kỷ luật kênh thanh toán** (nên ưu tiên Tiền tài khoản/Tiền mặt hay hạn chế quẹt thẻ ở khoản nào).
+4. **Hành động tối ưu ngay trong tuần này** để nâng điểm Sức khỏe Tài chính.`;
+
+  try {
+    const reply = await callGemini(prompt, false, false);
+    if (reply) {
+      box.classList.remove('hidden');
+      box.innerHTML = reply.replace(/\n/g, '<br>');
+    }
+  } catch (err) {
+    alert('Lỗi AI: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '🩺 AI Chẩn đoán';
+  }
+}
+
 async function runPrePurchaseCheck() {
   const item = document.getElementById('preBuyItem').value.trim();
   const price = Number(document.getElementById('preBuyPrice').value);
@@ -1384,7 +1630,7 @@ Hãy đưa ra phán quyết ngắn gọn bằng tiếng Việt gồm:
   }
 }
 
-// ==================== 5. ASSET, DEBT & TRANSACTION CRUD ====================
+// ==================== 7. CRUD & SETTINGS ====================
 function onAssetTypeChange() {
   const type = document.getElementById('asType').value;
   const meta = assetTypeMeta[type] || assetTypeMeta.FUND;
@@ -1608,15 +1854,20 @@ function deleteTx(id) {
 }
 
 function saveSettings() {
-  state.settings.apiKey = document.getElementById('cfgApiKey').value.trim();
+  const rawKey = document.getElementById('cfgApiKey').value.trim();
+  const rawPin = document.getElementById('cfgPin').value.trim();
+  state.settings.apiKeyEnc = encodeSecret(rawKey);
+  state.settings.pinHash = rawPin ? encodeSecret(rawPin) : '';
+  state.settings.googleClientId = document.getElementById('cfgGoogleClientId').value.trim();
   state.settings.fixedSalary = Number(document.getElementById('cfgFixedSalary').value) || 17500000;
   state.settings.assetGoal = Number(document.getElementById('cfgAssetGoal').value) || 4000000;
   saveState();
   closeModal('settingsModal');
+  alert('Đã lưu cấu hình & mã hóa bảo mật API Key!');
 }
 
 function clearForFreshStart() {
-  if (!confirm('Xóa toàn bộ dữ liệu mẫu (Tài sản, Nợ, Giao dịch) để bạn tự kê khai lại từ hôm nay? (API Key vẫn được giữ lại)')) return;
+  if (!confirm('Xóa toàn bộ dữ liệu mẫu (Tài sản, Nợ, Giao dịch) để bạn tự kê khai lại từ hôm nay? (API Key & PIN vẫn được giữ lại)')) return;
   state.transactions = [];
   state.assets = [];
   state.debts = [];
@@ -1696,10 +1947,13 @@ function importKomorebiCSV(event) {
 }
 
 function exportBackup() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const safeCopy = JSON.parse(JSON.stringify(state));
+  // Không xuất API Key thô ra file backup để đảm bảo an toàn
+  safeCopy.settings.apiKeyEnc = '';
+  const blob = new Blob([JSON.stringify(safeCopy, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `FinGuard_v4_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `FinGuard_v5_Backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
 }
 
@@ -1711,7 +1965,9 @@ function importBackup(event) {
     try {
       const data = JSON.parse(e.target.result);
       if (data && data.settings) {
+        const currentKey = state.settings.apiKeyEnc;
         state = data;
+        if (!state.settings.apiKeyEnc) state.settings.apiKeyEnc = currentKey;
         saveState();
         alert('Khôi phục dữ liệu thành công!');
         closeModal('settingsModal');
@@ -1732,7 +1988,9 @@ function switchTab(tab) {
 
 function openModal(id) {
   if (id === 'settingsModal') {
-    document.getElementById('cfgApiKey').value = state.settings.apiKey;
+    document.getElementById('cfgApiKey').value = getApiKey();
+    document.getElementById('cfgPin').value = decodeSecret(state.settings.pinHash || '');
+    document.getElementById('cfgGoogleClientId').value = state.settings.googleClientId || '';
     document.getElementById('cfgFixedSalary').value = state.settings.fixedSalary;
     document.getElementById('cfgAssetGoal').value = state.settings.assetGoal;
   }
