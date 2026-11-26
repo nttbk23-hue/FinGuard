@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FinGuard AI" />
-  <title>FinGuard AI v3 — Quản trị Tài sản, Đầu tư & Dòng tiền</title>
+  <title>FinGuard AI v4 — Quản trị Tài sản & Sức khỏe Tài chính</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
     .glass { background: rgba(30, 41, 59, 0.78); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.14); }
@@ -23,10 +23,10 @@
   <!-- HEADER -->
   <header class="sticky top-0 z-30 glass px-3.5 py-2.5 flex items-center justify-between gap-2">
     <div class="flex items-center gap-2 shrink-0">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center font-bold text-slate-950 text-sm shadow">FG</div>
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center font-extrabold text-slate-950 text-sm shadow">FG</div>
       <div>
-        <h1 class="font-bold text-sm tracking-tight text-white leading-none">FinGuard AI <span class="text-[10px] text-sky-400 font-normal">v3</span></h1>
-        <p class="text-[10px] text-slate-400 mt-0.5" id="headerMonthLabel">Quản trị Tài sản & Chi tiêu</p>
+        <h1 class="font-bold text-sm tracking-tight text-white leading-none">FinGuard AI <span class="text-[10px] text-sky-400 font-normal">v4</span></h1>
+        <p class="text-[10px] text-slate-400 mt-0.5" id="headerMonthLabel">Sức khỏe Tài chính & Dòng tiền</p>
       </div>
     </div>
 
@@ -51,7 +51,7 @@
       <div class="flex justify-between items-start">
         <div>
           <span class="text-[10px] uppercase tracking-wider font-semibold text-sky-400">Tài sản Ròng Thực tế (Net Worth)</span>
-          <div class="text-2xl font-bold text-white mt-0.5" id="netWorthValue">0 ₫</div>
+          <div class="text-2xl font-extrabold text-white mt-0.5" id="netWorthValue">0 ₫</div>
           <div class="text-[11px] mt-0.5" id="totalPortfolioPnl">Lãi/Lỗ đầu tư & định giá: 0 ₫</div>
         </div>
         <button onclick="switchTab('assets')" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold hover:bg-emerald-500/30">
@@ -60,7 +60,7 @@
       </div>
       <div class="grid grid-cols-2 gap-3 mt-3 pt-2.5 border-t border-slate-700/60 text-xs">
         <div>
-          <span class="text-slate-400 text-[11px]">Tổng Tài sản (Giá trị hiện tại):</span>
+          <span class="text-slate-400 text-[11px]">Tổng Tài sản (Thị trường):</span>
           <div class="font-bold text-emerald-400" id="totalGrossAssets">0 ₫</div>
         </div>
         <div class="text-right">
@@ -73,11 +73,11 @@
     <!-- AI QUICK INPUT BAR -->
     <section class="glass rounded-2xl p-3.5 shadow-lg">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold text-sky-400">✨ Nhập nhanh AI (Ghi chi tiêu hoặc Mua/Bán Tài sản)</span>
+        <span class="text-xs font-semibold text-sky-400">✨ Nhập nhanh AI (Tự nhận diện Tiền mặt / CK / Quẹt thẻ)</span>
         <button onclick="openModal('manualTxModal')" class="text-[11px] text-slate-400 underline hover:text-white">+ Nhập tay</button>
       </div>
       <div class="flex gap-2">
-        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k, mua 500 ccq DCDS giá 82k, mua 1 chỉ vàng 8tr5..."
+        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k tiền mặt, ăn tối 350k ck, mua đồ 2tr quẹt thẻ..."
           class="flex-1 bg-slate-900/95 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
           onkeydown="if(event.key==='Enter') handleAiInput()" />
         <button id="aiSendBtn" onclick="handleAiInput()"
@@ -90,14 +90,119 @@
 
     <!-- TAB NAVIGATION -->
     <nav class="flex border-b border-slate-800 text-xs font-medium text-slate-400">
-      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-2.5 tab-active">Dòng tiền 3 Sổ</button>
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-2.5 tab-active">Dashboard & Sức khỏe</button>
       <button onclick="switchTab('assets')" id="tab-assets" class="flex-1 py-2.5">Đầu tư & Tài sản</button>
       <button onclick="switchTab('debts')" id="tab-debts" class="flex-1 py-2.5">Nợ & Trả góp</button>
       <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2.5">Lịch sử</button>
     </nav>
 
-    <!-- TAB 1: DASHBOARD (DÒNG TIỀN 3 SỔ) -->
+    <!-- TAB 1: DASHBOARD & FINANCIAL HEALTH -->
     <div id="view-dashboard" class="space-y-3.5">
+
+      <!-- FINANCIAL HEALTH SCORE CARD -->
+      <div class="glass rounded-2xl p-4 border border-emerald-500/20 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Chỉ số Sức khỏe Tài chính</span>
+            <div class="flex items-baseline gap-2 mt-0.5">
+              <span class="text-3xl font-extrabold text-white" id="healthScoreVal">0</span>
+              <span class="text-xs text-slate-400">/ 100 điểm</span>
+              <span id="healthRankBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300">Đang tính...</span>
+            </div>
+          </div>
+          <button id="aiHealthBtn" onclick="runAiHealthDiagnosis()" class="px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[11px] font-semibold hover:bg-sky-500/30 transition">
+            🩺 AI Chẩn đoán
+          </button>
+        </div>
+
+        <!-- 4 PILLARS OF FINANCIAL HEALTH -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div class="flex justify-between text-[11px]">
+              <span class="text-slate-400">1. Tỷ lệ Tích sản</span>
+              <span class="font-bold text-emerald-400" id="pillarSavingVal">0%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+              <div id="pillarSavingBar" class="h-full bg-emerald-400" style="width:0%"></div>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1">Chuẩn tốt: &ge; 25% thu nhập</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div class="flex justify-between text-[11px]">
+              <span class="text-slate-400">2. Áp lực Trả góp</span>
+              <span class="font-bold text-sky-400" id="pillarDebtVal">0%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+              <div id="pillarDebtBar" class="h-full bg-sky-400" style="width:0%"></div>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1">Trần an toàn: &le; 25% lương cứng</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div class="flex justify-between text-[11px]">
+              <span class="text-slate-400">3. Dự phòng Tiền mặt</span>
+              <span class="font-bold text-amber-300" id="pillarLiquidityVal">0 tháng</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+              <div id="pillarLiquidityBar" class="h-full bg-amber-400" style="width:0%"></div>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1">Chuẩn an toàn: 3–6 tháng chi tiêu</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div class="flex justify-between text-[11px]">
+              <span class="text-slate-400">4. Tỷ trọng Quẹt thẻ</span>
+              <span class="font-bold text-purple-300" id="pillarCreditVal">0%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+              <div id="pillarCreditBar" class="h-full bg-purple-400" style="width:0%"></div>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1">Kiểm soát sao kê thẻ &le; 40% chi</div>
+          </div>
+        </div>
+
+        <div id="aiHealthReport" class="hidden p-3 rounded-xl bg-slate-950/90 border border-sky-500/30 text-xs text-slate-200 leading-relaxed"></div>
+      </div>
+
+      <!-- PAYMENT METHODS BREAKDOWN (TIỀN MẶT - TÀI KHOẢN - THẺ TÍN DỤNG) -->
+      <div class="glass rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Phân bổ Chi tiêu theo Hình thức Thanh toán</h2>
+          <span class="text-[11px] text-slate-400" id="totalChannelSpentLabel">Tổng chi: 0 ₫</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5">
+          <!-- Tiền mặt -->
+          <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
+            <div class="text-[11px] text-emerald-300 font-semibold">💵 Tiền mặt</div>
+            <div class="text-sm font-bold text-white mt-1" id="chCashVal">0 ₫</div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="chCashPct">0% tổng chi</div>
+          </div>
+
+          <!-- Tiền tài khoản -->
+          <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
+            <div class="text-[11px] text-sky-300 font-semibold">🏦 Tài khoản / QR</div>
+            <div class="text-sm font-bold text-white mt-1" id="chBankVal">0 ₫</div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="chBankPct">0% tổng chi</div>
+          </div>
+
+          <!-- Tiền thẻ tín dụng -->
+          <div class="p-2.5 rounded-xl bg-slate-900/90 border border-rose-500/20">
+            <div class="text-[11px] text-rose-300 font-semibold">💳 Thẻ tín dụng</div>
+            <div class="text-sm font-bold text-rose-300 mt-1" id="chCreditVal">0 ₫</div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="chCreditPct">Chờ sao kê: 0%</div>
+          </div>
+        </div>
+
+        <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden flex" id="channelStackedBar">
+          <div class="bg-emerald-400 h-full" style="width: 33%"></div>
+          <div class="bg-sky-400 h-full" style="width: 34%"></div>
+          <div class="bg-rose-400 h-full" style="width: 33%"></div>
+        </div>
+      </div>
+
+      <!-- 3 LEDGERS SUMMARY CARDS -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <!-- Sổ 1: Cá nhân -->
         <div class="glass rounded-2xl p-3.5 border-l-4 border-l-sky-400">
@@ -130,7 +235,7 @@
         </div>
       </div>
 
-      <!-- WATERFALL BUDGET & GUARDRAILS -->
+      <!-- WATERFALL GUARDRAILS -->
       <div class="glass rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Kiểm soát Trần & Kỷ luật Chi tiêu</h2>
@@ -172,7 +277,7 @@
       <div id="alertsBox" class="space-y-2"></div>
     </div>
 
-    <!-- TAB 2: ĐẦU TƯ & TÀI SẢN (TÍNH LÃI LỖ LIVE & ĐỊNH GIÁ TÀI SẢN LỚN) -->
+    <!-- TAB 2: ĐẦU TƯ & TÀI SẢN -->
     <div id="view-assets" class="hidden space-y-3.5">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
@@ -190,11 +295,7 @@
       </div>
 
       <div id="marketSyncStatus" class="hidden p-3 rounded-xl bg-sky-950/50 border border-sky-500/30 text-xs text-sky-200 leading-relaxed"></div>
-
-      <!-- Tỷ trọng phân bổ tài sản -->
       <div id="assetAllocationBar" class="glass rounded-2xl p-3.5 space-y-2"></div>
-
-      <!-- Danh sách chi tiết -->
       <div id="assetList" class="space-y-2.5"></div>
     </div>
 
@@ -214,13 +315,21 @@
 
     <!-- TAB 4: LỊCH SỬ GIAO DỊCH -->
     <div id="view-history" class="hidden space-y-3">
-      <div class="flex items-center justify-between">
-        <select id="filterLedger" onchange="renderHistory()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-          <option value="ALL">Tất cả 3 Sổ</option>
-          <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
-          <option value="ASSET">Sổ 2: Đầu tư & Tích sản</option>
-          <option value="ESCROW">Sổ 3: Mua hộ & Công ty</option>
-        </select>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex gap-1.5">
+          <select id="filterLedger" onchange="renderHistory()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white">
+            <option value="ALL">Tất cả 3 Sổ</option>
+            <option value="PERSONAL">Sổ 1: Cá nhân</option>
+            <option value="ASSET">Sổ 2: Đầu tư</option>
+            <option value="ESCROW">Sổ 3: Mua hộ/Cty</option>
+          </select>
+          <select id="filterMethod" onchange="renderHistory()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white">
+            <option value="ALL">Mọi hình thức</option>
+            <option value="CASH">💵 Tiền mặt</option>
+            <option value="BANK">🏦 Tài khoản</option>
+            <option value="CREDIT">💳 Thẻ tín dụng</option>
+          </select>
+        </div>
         <span class="text-xs text-slate-400" id="txCountLabel">0 giao dịch</span>
       </div>
       <div id="txHistoryList" class="space-y-2"></div>
@@ -228,7 +337,52 @@
 
   </main>
 
-  <!-- MODAL: KÊ KHAI / CẬP NHẬT TÀI SẢN & ĐẦU TƯ (HỖ TRỢ SỐ LƯỢNG × ĐƠN GIÁ & ĐỊNH GIÁ TÀI SẢN LỚN) -->
+  <!-- MODAL: MANUAL TRANSACTION -->
+  <div id="manualTxModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-sm">Thêm giao dịch thủ công</h3>
+        <button onclick="closeModal('manualTxModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[10px] text-slate-400">Ngày giao dịch</label>
+          <input id="mDate" type="date" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400">Hình thức thanh toán</label>
+          <select id="mMethod" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="BANK">🏦 Tiền tài khoản / QR</option>
+            <option value="CASH">💵 Tiền mặt</option>
+            <option value="CREDIT">💳 Tiền thẻ tín dụng</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[10px] text-slate-400">Phân loại Sổ</label>
+          <select id="mLedger" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
+            <option value="ASSET">Sổ 2: Đầu tư & Tích sản</option>
+            <option value="ESCROW">Sổ 3: Mua hộ / Công ty</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400">Dòng tiền</label>
+          <select id="mDirection" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="OUT">Chi ra / Nạp đầu tư</option>
+            <option value="IN">Thu về / Hoàn ứng</option>
+          </select>
+        </div>
+      </div>
+      <input id="mCategory" type="text" placeholder="Danh mục (VD: Ăn uống, Xăng xe, Lương, CCQ...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="mAmount" type="number" placeholder="Số tiền (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="mMemo" type="text" placeholder="Ghi chú chi tiết (Bắt buộc nếu >= 1 triệu)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <button onclick="saveManualTx()" class="w-full py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu giao dịch</button>
+    </div>
+  </div>
+
+  <!-- MODAL: KÊ KHAI / CẬP NHẬT TÀI SẢN & ĐẦU TƯ -->
   <div id="assetModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3 my-auto">
       <div class="flex justify-between items-center">
@@ -245,27 +399,26 @@
           <option value="GOLD">Vàng tích lũy (SJC / Nhẫn 9999)</option>
           <option value="REAL_ESTATE">Đất đai / Nhà cửa / Bất động sản</option>
           <option value="VEHICLE">Xe cộ / Máy móc / Hạ tầng NLMT</option>
-          <option value="CASH_SAVING">Tiền mặt / Sổ tiết kiệm / Chơi họ</option>
+          <option value="CASH_SAVING">Tiền mặt / Tiền tài khoản / Sổ tiết kiệm / Chơi họ</option>
         </select>
       </div>
 
       <div class="grid grid-cols-3 gap-2">
         <div class="col-span-2">
           <label class="text-[10px] text-slate-400">Tên tài sản / Mã</label>
-          <input id="asName" type="text" placeholder="VD: Quỹ DCDS, Vàng nhẫn, Đất Ba Vì..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+          <input id="asName" type="text" placeholder="VD: Quỹ DCDS, Vàng nhẫn, Tiền mặt..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
         </div>
         <div>
           <label class="text-[10px] text-slate-400">Mã tra cứu</label>
-          <input id="asTicker" type="text" placeholder="VD: DCDS, VNM, SJC" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white uppercase" />
+          <input id="asTicker" type="text" placeholder="DCDS, VNM, SJC" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white uppercase" />
         </div>
       </div>
 
-      <!-- CHẾ ĐỘ 1: TÍNH THEO SỐ LƯỢNG × ĐƠN GIÁ (CCQ, CỔ PHIẾU, VÀNG) -->
       <div id="unitPricingFields" class="space-y-2.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
         <div class="text-[11px] font-semibold text-sky-300">📊 Định giá theo Số lượng × Đơn giá thị trường</div>
         <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="text-[10px] text-slate-400" id="lblQty">Số lượng (CCQ/CP/Chỉ)</label>
+            <label class="text-[10px] text-slate-400" id="lblQty">Số lượng</label>
             <input id="asQty" type="number" step="any" oninput="recalcUnitPreview()" placeholder="VD: 100000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
           </div>
           <div>
@@ -283,7 +436,6 @@
         </div>
       </div>
 
-      <!-- CHẾ ĐỘ 2: ĐỊNH GIÁ TỔNG (ĐẤT ĐAI, NHÀ CỬA, XE CỘ, TIỀN MẶT) -->
       <div id="lumpPricingFields" class="hidden space-y-2.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
         <div class="text-[11px] font-semibold text-amber-300">🏠 Định giá Ước tính Tài sản (So với lúc mua)</div>
         <div class="grid grid-cols-2 gap-2">
@@ -305,7 +457,7 @@
         </div>
       </div>
 
-      <input id="asNote" type="text" placeholder="Ghi chú (VD: Vị trí đất, đời xe, ngày mua...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+      <input id="asNote" type="text" placeholder="Ghi chú (VD: Vị trí đất, đời xe, số dư tài khoản...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
       <button onclick="saveAsset()" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">Lưu & Tính Lãi/Lỗ</button>
     </div>
   </div>
@@ -336,8 +488,9 @@
         <input id="preBuyItem" type="text" placeholder="Tên món đồ / dịch vụ định mua..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
         <input id="preBuyPrice" type="number" placeholder="Số tiền (VNĐ)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
         <select id="preBuyType" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-          <option value="ONE_TIME">Trả thẳng 1 lần</option>
-          <option value="INSTALLMENT">Mua trả góp (chia kỳ)</option>
+          <option value="ONE_TIME">Trả thẳng 1 lần (Tiền mặt / Tài khoản)</option>
+          <option value="CREDIT_CARD">Quẹt thẻ tín dụng (Trả sao kê cuối kỳ)</option>
+          <option value="INSTALLMENT">Mua trả góp (Chia nhiều tháng)</option>
         </select>
         <button onclick="runPrePurchaseCheck()" id="preBuyBtn" class="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm">
           Phân tích Chi phí Cơ hội & Ra phán quyết
@@ -384,30 +537,6 @@
 
       <input id="debtNote" type="text" placeholder="Ghi chú hạn thanh toán / Lãi suất..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
       <button onclick="saveDebt()" class="w-full py-2.5 rounded-xl bg-rose-500 text-white font-bold text-sm">Lưu Khoản Nợ</button>
-    </div>
-  </div>
-
-  <!-- MODAL: MANUAL TRANSACTION -->
-  <div id="manualTxModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-white text-sm">Thêm giao dịch thủ công</h3>
-        <button onclick="closeModal('manualTxModal')" class="text-slate-400 hover:text-white">✕</button>
-      </div>
-      <input id="mDate" type="date" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <select id="mLedger" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-        <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
-        <option value="ASSET">Sổ 2: Đầu tư & Tích sản</option>
-        <option value="ESCROW">Sổ 3: Mua hộ / Chi phí Công ty</option>
-      </select>
-      <select id="mDirection" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-        <option value="OUT">Chi ra / Nạp đầu tư</option>
-        <option value="IN">Thu về / Hoàn ứng</option>
-      </select>
-      <input id="mCategory" type="text" placeholder="Danh mục (VD: Ăn uống, Lương, CCQ, Vàng...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="mAmount" type="number" placeholder="Số tiền (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="mMemo" type="text" placeholder="Ghi chú chi tiết (Bắt buộc nếu >= 1 triệu)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <button onclick="saveManualTx()" class="w-full py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu giao dịch</button>
     </div>
   </div>
 
@@ -466,7 +595,7 @@
   document.head.appendChild(appleIcon);
 
   const manifest = {
-    name: 'FinGuard AI — Quản trị Tài sản & Chi tiêu',
+    name: 'FinGuard AI — Sức khỏe Tài chính & Tài sản',
     short_name: 'FinGuard AI',
     start_url: location.href,
     display: 'standalone',
@@ -519,7 +648,7 @@ if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.
 }
 
 // ==================== 2. STATE & STORAGE ====================
-const STORAGE_KEY = 'finguard_ai_state_v3';
+const STORAGE_KEY = 'finguard_ai_state_v4';
 
 const defaultState = {
   settings: {
@@ -528,12 +657,27 @@ const defaultState = {
     assetGoal: 4000000
   },
   transactions: [
-    { id: 1, date: '2026-11-09', amount: 6000000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 1', verified: true },
-    { id: 2, date: '2026-11-13', amount: 10850000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 2', verified: true }
+    { id: 1, date: '2026-11-09', amount: 6000000, direction: 'IN', ledger: 'PERSONAL', method: 'BANK', category: 'Tiền lương', memo: 'Lương đợt 1', verified: true },
+    { id: 2, date: '2026-11-13', amount: 10850000, direction: 'IN', ledger: 'PERSONAL', method: 'BANK', category: 'Tiền lương', memo: 'Lương đợt 2', verified: true },
+    { id: 3, date: '2026-11-15', amount: 1500000, direction: 'OUT', ledger: 'PERSONAL', method: 'CASH', category: 'Ăn uống & Sinh hoạt', memo: 'Tiền mặt chi tiêu tuần', verified: true },
+    { id: 4, date: '2026-11-18', amount: 2400000, direction: 'OUT', ledger: 'PERSONAL', method: 'CREDIT', category: 'Mua sắm & Dịch vụ', memo: 'Quẹt thẻ tín dụng', verified: true },
+    { id: 5, date: '2026-11-20', amount: 3000000, direction: 'OUT', ledger: 'ASSET', method: 'BANK', category: 'Đầu tư tích sản', memo: 'Chuyển khoản mua CCQ & Họ', verified: true }
   ],
   assets: [
     {
       id: 201,
+      type: 'CASH_SAVING',
+      pricingMode: 'LUMP',
+      name: 'Tiền mặt & Tài khoản thanh toán',
+      ticker: '',
+      qty: 0, buyPrice: 0, currentPrice: 0,
+      invested: 35000000,
+      current: 35000000,
+      lastUpdated: '26/11/2026',
+      note: 'Quỹ thanh khoản & dự phòng'
+    },
+    {
+      id: 202,
       type: 'FUND',
       pricingMode: 'UNIT',
       name: 'Chứng chỉ quỹ DCDS (Mẫu)',
@@ -547,7 +691,7 @@ const defaultState = {
       note: 'Tự động nhân SL × Giá NAV'
     },
     {
-      id: 202,
+      id: 203,
       type: 'GOLD',
       pricingMode: 'UNIT',
       name: 'Vàng nhẫn 9999 (Mẫu)',
@@ -559,20 +703,6 @@ const defaultState = {
       current: 16900000,
       lastUpdated: '26/11/2026',
       note: 'Đơn vị: Chỉ'
-    },
-    {
-      id: 203,
-      type: 'VEHICLE',
-      pricingMode: 'LUMP',
-      name: 'Ô tô Civic 2008 + Hệ thống NLMT',
-      ticker: '',
-      qty: 0,
-      buyPrice: 0,
-      currentPrice: 0,
-      invested: 260000000,
-      current: 235000000,
-      lastUpdated: '26/11/2026',
-      note: 'Ước tính giá trị thị trường hiện tại'
     }
   ],
   debts: [
@@ -600,23 +730,25 @@ function getCurrentMonthPrefix() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-// ==================== 3. CORE RENDER & CALCULATIONS ====================
+// ==================== 3. CORE RENDER & FINANCIAL HEALTH ENGINE ====================
 const assetTypeMeta = {
   FUND: { label: 'Chứng chỉ quỹ', unitName: 'CCQ', color: 'bg-sky-400', badge: 'bg-sky-500/20 text-sky-300', mode: 'UNIT' },
   STOCK: { label: 'Cổ phiếu', unitName: 'CP', color: 'bg-indigo-400', badge: 'bg-indigo-500/20 text-indigo-300', mode: 'UNIT' },
   GOLD: { label: 'Vàng tích lũy', unitName: 'Chỉ', color: 'bg-amber-400', badge: 'bg-amber-500/20 text-amber-300', mode: 'UNIT' },
   REAL_ESTATE: { label: 'Đất đai / Nhà cửa', unitName: '', color: 'bg-rose-400', badge: 'bg-rose-500/20 text-rose-300', mode: 'LUMP' },
   VEHICLE: { label: 'Xe cộ / Hạ tầng', unitName: '', color: 'bg-purple-400', badge: 'bg-purple-500/20 text-purple-300', mode: 'LUMP' },
-  CASH_SAVING: { label: 'Tiền mặt / Họ / Tiết kiệm', unitName: '', color: 'bg-emerald-400', badge: 'bg-emerald-500/20 text-emerald-300', mode: 'LUMP' }
+  CASH_SAVING: { label: 'Tiền mặt / TK / Tiết kiệm', unitName: '', color: 'bg-emerald-400', badge: 'bg-emerald-500/20 text-emerald-300', mode: 'LUMP' }
 };
 
 function renderAll() {
   const monthPrefix = getCurrentMonthPrefix();
   const monthTxs = state.transactions.filter(t => t.date.startsWith(monthPrefix));
 
-  // Recalculate each asset's current & invested accurately
+  // 1. Portfolio & Net Worth
   let totalInvested = 0;
   let totalAssets = 0;
+  let liquidCashAssets = 0;
+
   state.assets.forEach(a => {
     if (a.pricingMode === 'UNIT') {
       a.invested = (Number(a.qty) || 0) * (Number(a.buyPrice) || 0);
@@ -624,6 +756,7 @@ function renderAll() {
     }
     totalInvested += Number(a.invested || 0);
     totalAssets += Number(a.current || 0);
+    if (a.type === 'CASH_SAVING') liquidCashAssets += Number(a.current || 0);
   });
 
   const totalPortfolioPnl = totalAssets - totalInvested;
@@ -635,7 +768,7 @@ function renderAll() {
   const netWorth = totalAssets - totalDebts;
 
   document.getElementById('netWorthValue').innerText = formatVND(netWorth);
-  document.getElementById('netWorthValue').className = `text-2xl font-bold mt-0.5 ${netWorth >= 0 ? 'text-white' : 'text-rose-400'}`;
+  document.getElementById('netWorthValue').className = `text-2xl font-extrabold mt-0.5 ${netWorth >= 0 ? 'text-white' : 'text-rose-400'}`;
 
   const pnlEl = document.getElementById('totalPortfolioPnl');
   pnlEl.innerText = `Lãi/Lỗ đầu tư & định giá: ${totalPortfolioPnl >= 0 ? '+' : ''}${formatVND(totalPortfolioPnl)} (${totalPortfolioPnl >= 0 ? '+' : ''}${pnlPctTotal}%)`;
@@ -644,12 +777,44 @@ function renderAll() {
   document.getElementById('totalGrossAssets').innerText = formatVND(totalAssets);
   document.getElementById('totalGrossDebts').innerText = formatVND(totalDebts);
 
-  // Sổ 1: Personal
+  // 2. Ledgers & Payment Methods (CASH / BANK / CREDIT)
   const pIn = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
-  const pOutDirect = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
+  const pOutTxs = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'OUT');
+  const pOutDirect = pOutTxs.reduce((s, t) => s + t.amount, 0);
   const activeInstMonthly = state.debts.filter(d => d.type === 'INSTALLMENT' && d.remainMonths > 0).reduce((s, d) => s + Number(d.monthly || 0), 0);
   const pOutTotal = pOutDirect + activeInstMonthly;
 
+  const allMonthOut = monthTxs.filter(t => t.direction === 'OUT' && t.ledger !== 'ASSET');
+  const cashSpent = allMonthOut.filter(t => t.method === 'CASH').reduce((s, t) => s + t.amount, 0);
+  const bankSpent = allMonthOut.filter(t => (t.method || 'BANK') === 'BANK').reduce((s, t) => s + t.amount, 0);
+  const creditSpent = allMonthOut.filter(t => t.method === 'CREDIT').reduce((s, t) => s + t.amount, 0);
+  const totalChannelOut = cashSpent + bankSpent + creditSpent;
+
+  document.getElementById('totalChannelSpentLabel').innerText = `Tổng chi tháng: ${formatVND(totalChannelOut)}`;
+  document.getElementById('chCashVal').innerText = formatVND(cashSpent);
+  document.getElementById('chBankVal').innerText = formatVND(bankSpent);
+  document.getElementById('chCreditVal').innerText = formatVND(creditSpent);
+
+  const cashPct = totalChannelOut > 0 ? Math.round((cashSpent / totalChannelOut) * 100) : 0;
+  const bankPct = totalChannelOut > 0 ? Math.round((bankSpent / totalChannelOut) * 100) : 0;
+  const creditPct = totalChannelOut > 0 ? Math.max(0, 100 - cashPct - bankPct) : 0;
+
+  document.getElementById('chCashPct').innerText = `${cashPct}% tổng chi`;
+  document.getElementById('chBankPct').innerText = `${bankPct}% tổng chi`;
+  document.getElementById('chCreditPct').innerText = `Chờ sao kê: ${creditPct}%`;
+
+  const stackedBar = document.getElementById('channelStackedBar');
+  if (totalChannelOut > 0) {
+    stackedBar.innerHTML = `
+      <div class="bg-emerald-400 h-full transition-all" style="width:${cashPct}%" title="Tiền mặt: ${cashPct}%"></div>
+      <div class="bg-sky-400 h-full transition-all" style="width:${bankPct}%" title="Tài khoản: ${bankPct}%"></div>
+      <div class="bg-rose-400 h-full transition-all" style="width:${creditPct}%" title="Thẻ tín dụng: ${creditPct}%"></div>
+    `;
+  } else {
+    stackedBar.innerHTML = `<div class="bg-slate-700 h-full w-full"></div>`;
+  }
+
+  // Sổ 1, 2, 3
   document.getElementById('statPersonalIn').innerText = formatVND(pIn);
   document.getElementById('statPersonalOut').innerText = formatVND(pOutTotal);
   const pNet = pIn - pOutTotal;
@@ -657,14 +822,13 @@ function renderAll() {
   pNetEl.innerText = (pNet >= 0 ? '+' : '') + formatVND(pNet);
   pNetEl.className = `text-lg font-bold mt-1 ${pNet >= 0 ? 'text-white' : 'text-rose-400'}`;
 
-  // Sổ 2: Asset Month
   const assetMonth = monthTxs.filter(t => t.ledger === 'ASSET' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
-  const savingRate = pIn > 0 ? Math.round((assetMonth / pIn) * 100) : 0;
+  const baseIncome = pIn > 0 ? pIn : state.settings.fixedSalary;
+  const savingRate = baseIncome > 0 ? Math.round((assetMonth / baseIncome) * 100) : 0;
   document.getElementById('statAssetMonth').innerText = formatVND(assetMonth);
   document.getElementById('statSavingRate').innerText = `${savingRate}% thu nhập`;
   document.getElementById('statGoalMini').innerText = formatVND(state.settings.assetGoal);
 
-  // Sổ 3: Escrow
   const escOut = state.transactions.filter(t => t.ledger === 'ESCROW' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
   const escIn = state.transactions.filter(t => t.ledger === 'ESCROW' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
   const escPending = Math.max(0, escOut - escIn);
@@ -672,7 +836,49 @@ function renderAll() {
   document.getElementById('statEscrowIn').innerText = formatVND(escIn);
   document.getElementById('statEscrowPending').innerText = formatVND(escPending);
 
-  // Guardrails Progress
+  // 3. FINANCIAL HEALTH SCORING ENGINE (4 PILLARS -> 100 POINTS)
+  const debtRatio = state.settings.fixedSalary > 0 ? Math.round((activeInstMonthly / state.settings.fixedSalary) * 100) : 0;
+  const monthlyBurnEst = Math.max(10000000, pOutTotal);
+  const liquidityMonths = Number((liquidCashAssets / monthlyBurnEst).toFixed(1));
+
+  const scoreSaving = Math.min(35, Math.round((savingRate / 25) * 35));
+  const scoreDebt = debtRatio <= 15 ? 30 : Math.max(0, Math.round(30 - ((debtRatio - 15) / 30) * 30));
+  const scoreLiquidity = Math.min(20, Math.round((liquidityMonths / 3) * 20));
+  const scoreCredit = creditPct <= 35 ? 15 : Math.max(0, Math.round(15 - ((creditPct - 35) / 45) * 15));
+
+  const totalHealthScore = Math.min(100, scoreSaving + scoreDebt + scoreLiquidity + scoreCredit);
+
+  document.getElementById('healthScoreVal').innerText = totalHealthScore;
+  const rankBadge = document.getElementById('healthRankBadge');
+  if (totalHealthScore >= 80) {
+    rankBadge.innerText = '🌟 Rất Khỏe (Vững vàng tích sản)';
+    rankBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300';
+  } else if (totalHealthScore >= 60) {
+    rankBadge.innerText = '✅ Ổn định (Cần tối ưu thêm)';
+    rankBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300';
+  } else if (totalHealthScore >= 40) {
+    rankBadge.innerText = '⚠️ Trung bình (Chú ý áp lực nợ/thẻ)';
+    rankBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300';
+  } else {
+    rankBadge.innerText = '🚨 Báo động (Cần siết chi tiêu ngay)';
+    rankBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300';
+  }
+
+  document.getElementById('pillarSavingVal').innerText = `${savingRate}%`;
+  document.getElementById('pillarSavingBar').style.width = `${Math.min(100, (savingRate / 30) * 100)}%`;
+
+  document.getElementById('pillarDebtVal').innerText = `${debtRatio}%`;
+  document.getElementById('pillarDebtBar').style.width = `${Math.min(100, (debtRatio / 40) * 100)}%`;
+  document.getElementById('pillarDebtBar').className = `h-full ${debtRatio > 25 ? 'bg-rose-500' : 'bg-sky-400'}`;
+
+  document.getElementById('pillarLiquidityVal').innerText = `${liquidityMonths} tháng`;
+  document.getElementById('pillarLiquidityBar').style.width = `${Math.min(100, (liquidityMonths / 6) * 100)}%`;
+
+  document.getElementById('pillarCreditVal').innerText = `${creditPct}%`;
+  document.getElementById('pillarCreditBar').style.width = `${Math.min(100, creditPct)}%`;
+  document.getElementById('pillarCreditBar').className = `h-full ${creditPct > 40 ? 'bg-rose-500' : 'bg-purple-400'}`;
+
+  // 4. Guardrails Progress
   const maxInstCap = state.settings.fixedSalary * 0.25;
   const instPct = Math.min(100, Math.round((activeInstMonthly / maxInstCap) * 100));
   document.getElementById('installmentCapText').innerText = `${formatVND(activeInstMonthly)} / ${formatVND(maxInstCap)}`;
@@ -698,9 +904,14 @@ function renderAll() {
   document.getElementById('funCapText').innerText = `${formatVND(funSpent)} / 150.000 ₫`;
   document.getElementById('funCapBar').style.width = `${funPct}%`;
 
-  // Alerts
+  // 5. Alerts
   const alertsBox = document.getElementById('alertsBox');
   alertsBox.innerHTML = '';
+  if (creditSpent > 0) {
+    alertsBox.innerHTML += `<div class="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs text-purple-200">
+      💳 Dư nợ quẹt thẻ tín dụng phát sinh trong tháng: <b>${formatVND(creditSpent)}</b> — Hãy đảm bảo số dư Tiền tài khoản đủ thanh toán khi đến kỳ sao kê.
+    </div>`;
+  }
   const unverified = state.transactions.filter(t => t.amount >= 1000000 && (!t.memo || t.memo.trim() === ''));
   if (unverified.length > 0) {
     alertsBox.innerHTML += `<div class="p-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-xs text-rose-200">
@@ -828,29 +1039,37 @@ function renderDebts() {
 }
 
 function renderHistory() {
-  const filter = document.getElementById('filterLedger').value;
+  const filterLedger = document.getElementById('filterLedger').value;
+  const filterMethod = document.getElementById('filterMethod').value;
+
   const txs = [...state.transactions]
-    .filter(t => filter === 'ALL' || t.ledger === filter)
+    .filter(t => (filterLedger === 'ALL' || t.ledger === filterLedger) && (filterMethod === 'ALL' || (t.method || 'BANK') === filterMethod))
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
 
   document.getElementById('txCountLabel').innerText = `${txs.length} giao dịch`;
   const badgeMap = {
     PERSONAL: '<span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px]">Cá nhân</span>',
-    ASSET: '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Đầu tư/Tích sản</span>',
+    ASSET: '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Đầu tư</span>',
     ESCROW: '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px]">Mua hộ/Cty</span>'
+  };
+  const methodMap = {
+    CASH: '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/40 text-[10px]">💵 Tiền mặt</span>',
+    BANK: '<span class="px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-700/40 text-[10px]">🏦 Tài khoản</span>',
+    CREDIT: '<span class="px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-700/40 text-[10px]">💳 Thẻ TD</span>'
   };
 
   document.getElementById('txHistoryList').innerHTML = txs.map(t => `
     <div class="glass rounded-xl p-3 flex justify-between items-center">
-      <div class="space-y-0.5">
-        <div class="flex items-center gap-1.5">
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-1">
           ${badgeMap[t.ledger]}
-          <span class="font-semibold text-xs text-white">${t.category}</span>
+          ${methodMap[t.method || 'BANK']}
+          <span class="font-semibold text-xs text-white ml-0.5">${t.category}</span>
           <span class="text-[10px] text-slate-500">${t.date}</span>
         </div>
         <div class="text-xs text-slate-400">${t.memo || '<span class="text-rose-400 italic">Chưa có ghi chú</span>'}</div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <span class="font-bold text-xs ${t.direction === 'IN' ? 'text-emerald-400' : (t.ledger === 'ASSET' ? 'text-sky-400' : 'text-slate-200')}">
           ${t.direction === 'IN' ? '+' : '-'}${formatVND(t.amount)}
         </span>
@@ -860,7 +1079,7 @@ function renderHistory() {
   `).join('');
 }
 
-// ==================== 4. GEMINI AI ENGINE + ONLINE PRICE CHECK ====================
+// ==================== 4. GEMINI AI ENGINE (DIAGNOSIS + PARSING + LIVE PRICE) ====================
 async function callGemini(promptText, isJson = false, useSearch = false) {
   const apiKey = state.settings.apiKey;
   if (!apiKey) {
@@ -888,7 +1107,50 @@ async function callGemini(promptText, isJson = false, useSearch = false) {
   return data.candidates[0].content.parts[0].text;
 }
 
-// Tự động tra cứu giá CCQ, Cổ phiếu, Vàng hôm nay qua Google Search Grounding
+async function runAiHealthDiagnosis() {
+  const btn = document.getElementById('aiHealthBtn');
+  const box = document.getElementById('aiHealthReport');
+  btn.disabled = true;
+  btn.innerText = '⏳ Đang phân tích...';
+
+  const score = document.getElementById('healthScoreVal').innerText;
+  const netWorth = document.getElementById('netWorthValue').innerText;
+  const totalAssets = document.getElementById('totalGrossAssets').innerText;
+  const totalDebts = document.getElementById('totalGrossDebts').innerText;
+  const pIn = document.getElementById('statPersonalIn').innerText;
+  const pOut = document.getElementById('statPersonalOut').innerText;
+  const assetMonth = document.getElementById('statAssetMonth').innerText;
+  const cashSpent = document.getElementById('chCashVal').innerText;
+  const bankSpent = document.getElementById('chBankVal').innerText;
+  const creditSpent = document.getElementById('chCreditVal').innerText;
+
+  const prompt = `
+Đóng vai CFO cá nhân phân tích Sức khỏe Tài chính của chủ nhân dựa trên số liệu thực tế hiện tại:
+- Điểm Sức khỏe Tài chính: ${score}/100
+- Tài sản ròng (Net Worth): ${netWorth} (Tổng Tài sản: ${totalAssets} | Tổng Dư nợ: ${totalDebts})
+- Dòng tiền tháng này: Thu ${pIn} | Chi sinh hoạt + Trả góp ${pOut} | Nạp đầu tư tích sản ${assetMonth}
+- Phân bổ kênh chi tiêu tháng: Tiền mặt ${cashSpent} | Tiền tài khoản ${bankSpent} | Quẹt thẻ tín dụng ${creditSpent}.
+
+Hãy đưa ra bản chẩn đoán sắc bén trong 4 gạch đầu dòng ngắn gọn:
+1. **Điểm mạnh nhất** trong cấu trúc tài sản & dòng tiền hiện tại.
+2. **Rủi ro tiềm ẩn** (về áp lực trả góp, dư nợ quẹt thẻ tín dụng chờ sao kê, hoặc thanh khoản).
+3. **Kỷ luật kênh thanh toán** (nên ưu tiên Tiền tài khoản/Tiền mặt hay hạn chế quẹt thẻ ở khoản nào).
+4. **Hành động tối ưu ngay trong tuần này** để nâng điểm Sức khỏe Tài chính.`;
+
+  try {
+    const reply = await callGemini(prompt, false, false);
+    if (reply) {
+      box.classList.remove('hidden');
+      box.innerHTML = reply.replace(/\n/g, '<br>');
+    }
+  } catch (err) {
+    alert('Lỗi AI: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '🩺 AI Chẩn đoán';
+  }
+}
+
 async function syncMarketPricesOnline() {
   const unitAssets = state.assets.filter(a => a.pricingMode === 'UNIT');
   if (unitAssets.length === 0) {
@@ -906,11 +1168,11 @@ Hãy tra cứu giá thị trường mới nhất hôm nay tại Việt Nam (đơ
 ${itemsQuery}
 
 Quy tắc đơn vị giá:
-- Nếu là Cổ phiếu (STOCK): giá 1 cổ phiếu tính bằng VNĐ (VD: 65000 nếu 65.0).
-- Nếu là Chứng chỉ quỹ (FUND): giá NAV/CCQ mới nhất tính bằng VNĐ (VD: 82500).
-- Nếu là Vàng (GOLD): giá mua vào/bán ra tính theo 1 CHỈ vàng VNĐ (VD: 8450000 nếu 84.5 triệu/lượng).
+- Cổ phiếu (STOCK): giá 1 cổ phiếu tính bằng VNĐ (VD: 65000).
+- Chứng chỉ quỹ (FUND): giá NAV/CCQ mới nhất tính bằng VNĐ (VD: 82500).
+- Vàng (GOLD): giá mua vào/bán ra tính theo 1 CHỈ vàng VNĐ (VD: 8450000).
 
-Chỉ trả về JSON thuần túy (không markdown) theo định dạng:
+Chỉ trả về JSON thuần túy theo định dạng:
 {
   "prices": [
     { "id": number, "price": number, "source_note": "string ngắn gọn giá & ngày" }
@@ -940,7 +1202,7 @@ Chỉ trả về JSON thuần túy (không markdown) theo định dạng:
     statusBox.classList.remove('hidden');
     statusBox.innerHTML = `✅ Đã cập nhật giá thị trường cho <b>${updatedCount}</b> mã đầu tư (${todayStr}).<br><span class="text-slate-300">${parsed.summary}</span>`;
   } catch (err) {
-    alert('Không thể tự động lấy giá online: ' + err.message + '\nBạn vẫn có thể bấm "✏️ Cập nhật giá / SL" để nhập giá tay.');
+    alert('Không thể tự động lấy giá online: ' + err.message);
   } finally {
     btn.disabled = false;
     btn.innerText = '🔄 Check giá Online';
@@ -959,12 +1221,16 @@ async function handleAiInput() {
 
   const today = new Date().toISOString().split('T')[0];
   const prompt = `
-Bạn là FinGuard AI — CFO cá nhân quản trị dòng tiền theo 3 sổ độc lập:
-- PERSONAL: Chi tiêu sinh hoạt cá nhân & gia đình (Ăn uống, Đi lại, Y tế, Nhà cửa, Giải trí/Vietlott) hoặc Lương/Thu nhập.
-- ASSET: Mua/Nạp đầu tư tích sản: Chứng chỉ quỹ (FUND), Cổ phiếu (STOCK), Vàng (GOLD), Đất/Nhà (REAL_ESTATE), Xe/Hạ tầng (VEHICLE), Tiền tiết kiệm/Chơi họ (CASH_SAVING).
-- ESCROW: Mua hộ đồ cho người khác, tạm ứng chi phí công ty (Đất Son, Tohoku, mỏ đá...).
+Bạn là FinGuard AI — CFO cá nhân quản trị dòng tiền theo 3 sổ độc lập & 3 hình thức thanh toán:
+- Sổ (ledger):
+  * PERSONAL: Chi tiêu sinh hoạt cá nhân & gia đình hoặc Lương/Thu nhập.
+  * ASSET: Mua/Nạp đầu tư tích sản: CCQ (FUND), Cổ phiếu (STOCK), Vàng (GOLD), Đất/Nhà (REAL_ESTATE), Xe/Hạ tầng (VEHICLE), Tiết kiệm/Chơi họ (CASH_SAVING).
+  * ESCROW: Mua hộ đồ cho người khác, tạm ứng chi phí công ty.
+- Hình thức thanh toán (method):
+  * CASH: Tiền mặt (nếu nhắc tới "tiền mặt", "rút tiền", "trả tiền mặt").
+  * CREDIT: Thẻ tín dụng (nếu nhắc tới "quẹt thẻ", "thẻ tín dụng", "visa", "mastercard", "trả góp thẻ").
+  * BANK: Tiền tài khoản ngân hàng / chuyển khoản / QR (mặc định nếu không nói rõ).
 
-Nếu người dùng nhập giao dịch mua tài sản có số lượng và đơn giá (VD: "mua 500 ccq DCDS giá 82k" hoặc "mua 1 chỉ vàng 8tr5"), hãy bóc tách chính xác "qty", "unit_price", "ticker", "asset_type".
 Hôm nay là: ${today}.
 Câu nhập liệu: "${text}"
 
@@ -976,6 +1242,7 @@ Trả về JSON đúng schema:
       "amount": number,
       "direction": "IN" | "OUT",
       "ledger": "PERSONAL" | "ASSET" | "ESCROW",
+      "method": "CASH" | "BANK" | "CREDIT",
       "category": "string",
       "asset_type": "FUND" | "STOCK" | "GOLD" | "REAL_ESTATE" | "VEHICLE" | "CASH_SAVING" | null,
       "ticker": "string | null",
@@ -1000,12 +1267,12 @@ Trả về JSON đúng schema:
         amount: amt,
         direction: tx.direction,
         ledger: tx.ledger,
+        method: tx.method || 'BANK',
         category: tx.category,
         memo: tx.memo,
         verified: true
       });
 
-      // Cập nhật danh mục Đầu tư & Tính lại Giá vốn bình quân (Weighted Average Cost)
       if (tx.ledger === 'ASSET' && tx.direction === 'OUT') {
         const aType = tx.asset_type || 'FUND';
         const meta = assetTypeMeta[aType] || assetTypeMeta.FUND;
@@ -1094,7 +1361,7 @@ async function runPrePurchaseCheck() {
   const prompt = `
 Đóng vai FinGuard AI (CFO kỷ luật thép). Người dùng đang cân nhắc mua:
 - Món đồ: "${item}"
-- Giá: ${price.toLocaleString('vi-VN')} VNĐ (${type === 'INSTALLMENT' ? 'Mua trả góp' : 'Trả thẳng'})
+- Giá: ${price.toLocaleString('vi-VN')} VNĐ (Hình thức: ${type})
 - Lương cố định: ${state.settings.fixedSalary.toLocaleString('vi-VN')} VNĐ/tháng
 - Nghĩa vụ trả góp hiện tại: ${activeInst.toLocaleString('vi-VN')} VNĐ/tháng (Trần tối đa 25% = ${maxCap.toLocaleString('vi-VN')} VNĐ)
 - Giá trị tương lai nếu đem số tiền này đầu tư tích sản 10 năm (lãi kép 10%/năm): ${fv10.toLocaleString('vi-VN')} VNĐ.
@@ -1117,7 +1384,7 @@ Hãy đưa ra phán quyết ngắn gọn bằng tiếng Việt gồm:
   }
 }
 
-// ==================== 5. ASSET MODAL LOGIC (UNIT vs LUMP VALUATION) ====================
+// ==================== 5. ASSET, DEBT & TRANSACTION CRUD ====================
 function onAssetTypeChange() {
   const type = document.getElementById('asType').value;
   const meta = assetTypeMeta[type] || assetTypeMeta.FUND;
@@ -1250,7 +1517,6 @@ function deleteAsset(id) {
   saveState();
 }
 
-// ==================== 6. DEBTS, TRANSACTIONS & SETTINGS ====================
 function toggleDebtFields() {
   const type = document.getElementById('debtType').value;
   document.getElementById('installmentFields').classList.toggle('hidden', type !== 'INSTALLMENT');
@@ -1322,6 +1588,7 @@ function deleteDebt(id) {
 
 function saveManualTx() {
   const date = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
+  const method = document.getElementById('mMethod').value || 'BANK';
   const ledger = document.getElementById('mLedger').value;
   const direction = document.getElementById('mDirection').value;
   const category = document.getElementById('mCategory').value.trim() || 'Khác';
@@ -1329,7 +1596,7 @@ function saveManualTx() {
   const memo = document.getElementById('mMemo').value.trim();
 
   if (!amount) return alert('Vui lòng nhập số tiền!');
-  state.transactions.push({ id: Date.now(), date, amount, direction, ledger, category, memo, verified: true });
+  state.transactions.push({ id: Date.now(), date, amount, direction, ledger, method, category, memo, verified: true });
   saveState();
   closeModal('manualTxModal');
 }
@@ -1403,12 +1670,17 @@ function importKomorebiCSV(event) {
         ledger = 'ASSET';
       }
 
+      let method = 'BANK';
+      if (/tiền mặt/i.test(r.memo)) method = 'CASH';
+      else if (/thẻ|trả góp/i.test(r.memo)) method = 'CREDIT';
+
       state.transactions.push({
         id: Date.now() + idx,
         date: isoDate,
         amount: r.amount,
         direction: r.type === 1 ? 'IN' : 'OUT',
         ledger,
+        method,
         category: catName,
         memo: r.memo,
         verified: true
@@ -1427,7 +1699,7 @@ function exportBackup() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `FinGuard_v3_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `FinGuard_v4_Backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
 }
 
