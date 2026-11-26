@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#0b1120" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>FinGuard AI — Quản trị Dòng tiền & Tích sản</title>
+  <meta name="apple-mobile-web-app-title" content="FinGuard AI" />
+  <title>FinGuard AI v3 — Quản trị Tài sản, Đầu tư & Dòng tiền</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #f8fafc; }
-    .glass { background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.12); }
-    .tab-active { color: #38bdf8; border-bottom: 2px solid #38bdf8; }
+    body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    .glass { background: rgba(30, 41, 59, 0.78); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.14); }
+    .tab-active { color: #38bdf8; border-bottom: 2px solid #38bdf8; font-weight: 600; }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
   </style>
@@ -20,56 +21,83 @@
 <body class="min-h-screen pb-24">
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-30 glass px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center font-bold text-slate-950">FG</div>
+  <header class="sticky top-0 z-30 glass px-3.5 py-2.5 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 shrink-0">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center font-bold text-slate-950 text-sm shadow">FG</div>
       <div>
-        <h1 class="font-bold text-sm tracking-tight text-white">FinGuard AI</h1>
-        <p class="text-[11px] text-slate-400" id="headerMonthLabel">Tháng 11/2026</p>
+        <h1 class="font-bold text-sm tracking-tight text-white leading-none">FinGuard AI <span class="text-[10px] text-sky-400 font-normal">v3</span></h1>
+        <p class="text-[10px] text-slate-400 mt-0.5" id="headerMonthLabel">Quản trị Tài sản & Chi tiêu</p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <button onclick="openModal('preBuyModal')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium hover:bg-amber-500/30 transition">
-        🛡️ Hỏi AI trước khi mua
+
+    <div class="flex items-center gap-1.5">
+      <button id="installPwaBtn" onclick="triggerPwaInstall()" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold hover:bg-emerald-500/30 transition flex items-center gap-1">
+        📲 <span>Cài App</span>
       </button>
-      <button onclick="openModal('settingsModal')" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white">
+      <button onclick="openModal('preBuyModal')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-semibold hover:bg-amber-500/30 transition">
+        🛡️ Hỏi mua
+      </button>
+      <button onclick="openModal('settingsModal')" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-sm">
         ⚙️
       </button>
     </div>
   </header>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+  <main class="max-w-2xl mx-auto px-3.5 pt-3.5 space-y-3.5">
+
+    <!-- NET WORTH & PORTFOLIO P&L BANNER -->
+    <section class="glass rounded-2xl p-4 bg-gradient-to-r from-slate-900 via-slate-800/90 to-slate-900 border border-sky-500/20">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-sky-400">Tài sản Ròng Thực tế (Net Worth)</span>
+          <div class="text-2xl font-bold text-white mt-0.5" id="netWorthValue">0 ₫</div>
+          <div class="text-[11px] mt-0.5" id="totalPortfolioPnl">Lãi/Lỗ đầu tư & định giá: 0 ₫</div>
+        </div>
+        <button onclick="switchTab('assets')" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold hover:bg-emerald-500/30">
+          + Kê khai Tài sản
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-3 pt-2.5 border-t border-slate-700/60 text-xs">
+        <div>
+          <span class="text-slate-400 text-[11px]">Tổng Tài sản (Giá trị hiện tại):</span>
+          <div class="font-bold text-emerald-400" id="totalGrossAssets">0 ₫</div>
+        </div>
+        <div class="text-right">
+          <span class="text-slate-400 text-[11px]">Tổng Dư nợ (Trả góp + Vay):</span>
+          <div class="font-bold text-rose-400" id="totalGrossDebts">0 ₫</div>
+        </div>
+      </div>
+    </section>
 
     <!-- AI QUICK INPUT BAR -->
     <section class="glass rounded-2xl p-3.5 shadow-lg">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold text-sky-400 flex items-center gap-1">✨ Nhập nhanh bằng AI (Tự động phân 3 sổ)</span>
+        <span class="text-xs font-semibold text-sky-400">✨ Nhập nhanh AI (Ghi chi tiêu hoặc Mua/Bán Tài sản)</span>
         <button onclick="openModal('manualTxModal')" class="text-[11px] text-slate-400 underline hover:text-white">+ Nhập tay</button>
       </div>
       <div class="flex gap-2">
-        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k, nạp ccq 2tr, ứng mua đồ cty 1tr5..."
-          class="flex-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k, mua 500 ccq DCDS giá 82k, mua 1 chỉ vàng 8tr5..."
+          class="flex-1 bg-slate-900/95 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
           onkeydown="if(event.key==='Enter') handleAiInput()" />
         <button id="aiSendBtn" onclick="handleAiInput()"
-          class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm transition shrink-0">
+          class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition shrink-0">
           Ghi
         </button>
       </div>
-      <div id="aiFeedback" class="hidden mt-3 p-3 rounded-xl bg-slate-900/90 border border-sky-500/30 text-xs text-slate-200 leading-relaxed"></div>
+      <div id="aiFeedback" class="hidden mt-3 p-3 rounded-xl bg-slate-900/95 border border-sky-500/30 text-xs text-slate-200 leading-relaxed"></div>
     </section>
 
     <!-- TAB NAVIGATION -->
     <nav class="flex border-b border-slate-800 text-xs font-medium text-slate-400">
-      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-2.5 tab-active">Tổng quan 3 Sổ</button>
-      <button onclick="switchTab('installments')" id="tab-installments" class="flex-1 py-2.5">Trả góp & Nợ</button>
-      <button onclick="switchTab('assets')" id="tab-assets" class="flex-1 py-2.5">Tích sản</button>
-      <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2.5">Lịch sử GD</button>
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-2.5 tab-active">Dòng tiền 3 Sổ</button>
+      <button onclick="switchTab('assets')" id="tab-assets" class="flex-1 py-2.5">Đầu tư & Tài sản</button>
+      <button onclick="switchTab('debts')" id="tab-debts" class="flex-1 py-2.5">Nợ & Trả góp</button>
+      <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2.5">Lịch sử</button>
     </nav>
 
-    <!-- TAB 1: DASHBOARD -->
-    <div id="view-dashboard" class="space-y-4">
-      <!-- 3 LEDGERS SUMMARY CARDS -->
+    <!-- TAB 1: DASHBOARD (DÒNG TIỀN 3 SỔ) -->
+    <div id="view-dashboard" class="space-y-3.5">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <!-- Sổ 1: Cá nhân -->
         <div class="glass rounded-2xl p-3.5 border-l-4 border-l-sky-400">
@@ -77,17 +105,17 @@
           <div class="text-lg font-bold text-white mt-1" id="statPersonalNet">0 ₫</div>
           <div class="mt-2 space-y-0.5 text-[11px]">
             <div class="flex justify-between text-emerald-400"><span>Thu cá nhân:</span><span id="statPersonalIn">0 ₫</span></div>
-            <div class="flex justify-between text-rose-400"><span>Chi sinh hoạt + Góp:</span><span id="statPersonalOut">0 ₫</span></div>
+            <div class="flex justify-between text-rose-400"><span>Chi SH + Góp tháng:</span><span id="statPersonalOut">0 ₫</span></div>
           </div>
         </div>
 
-        <!-- Sổ 2: Tích sản -->
+        <!-- Sổ 2: Tích sản tháng này -->
         <div class="glass rounded-2xl p-3.5 border-l-4 border-l-emerald-400">
-          <div class="text-[11px] text-slate-400 uppercase font-semibold">2. Vốn Tích sản ròng</div>
-          <div class="text-lg font-bold text-emerald-400 mt-1" id="statAssetTotal">0 ₫</div>
+          <div class="text-[11px] text-slate-400 uppercase font-semibold">2. Nạp Đầu tư Tháng này</div>
+          <div class="text-lg font-bold text-emerald-400 mt-1" id="statAssetMonth">0 ₫</div>
           <div class="mt-2 space-y-0.5 text-[11px]">
-            <div class="flex justify-between text-slate-300"><span>Nạp tháng này:</span><span id="statAssetMonth">0 ₫</span></div>
             <div class="flex justify-between text-sky-300"><span>Tỷ lệ tích sản:</span><span id="statSavingRate">0%</span></div>
+            <div class="flex justify-between text-slate-400"><span>Mục tiêu tối thiểu:</span><span id="statGoalMini">4.000.000 ₫</span></div>
           </div>
         </div>
 
@@ -105,11 +133,10 @@
       <!-- WATERFALL BUDGET & GUARDRAILS -->
       <div class="glass rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Kiểm soát Trần & Nguyên tắc Waterfall</h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Kiểm soát Trần & Kỷ luật Chi tiêu</h2>
           <span id="debtStatusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300">An toàn</span>
         </div>
 
-        <!-- Progress 1: Trần trả góp 25% lương cố định -->
         <div>
           <div class="flex justify-between text-xs mb-1">
             <span class="text-slate-300">Nghĩa vụ trả góp / tháng (Trần 25% lương cứng)</span>
@@ -120,10 +147,9 @@
           </div>
         </div>
 
-        <!-- Progress 2: Mục tiêu tích sản tối thiểu -->
         <div>
           <div class="flex justify-between text-xs mb-1">
-            <span class="text-slate-300">Mục tiêu Tích sản tháng (Tối thiểu 4.000.000 ₫)</span>
+            <span class="text-slate-300">Mục tiêu Tích sản tháng (Pay Yourself First)</span>
             <span class="font-semibold text-emerald-400" id="assetGoalText">0 / 4.000.000 ₫</span>
           </div>
           <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -131,7 +157,6 @@
           </div>
         </div>
 
-        <!-- Progress 3: Trần giải trí / Vietlott -->
         <div>
           <div class="flex justify-between text-xs mb-1">
             <span class="text-slate-300">Trần Giải trí & Vietlott (Tối đa 150.000 ₫/tháng)</span>
@@ -143,45 +168,57 @@
         </div>
       </div>
 
-      <!-- UNVERIFIED / ESCROW ALERTS -->
+      <!-- ALERTS -->
       <div id="alertsBox" class="space-y-2"></div>
     </div>
 
-    <!-- TAB 2: INSTALLMENTS -->
-    <div id="view-installments" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
+    <!-- TAB 2: ĐẦU TƯ & TÀI SẢN (TÍNH LÃI LỖ LIVE & ĐỊNH GIÁ TÀI SẢN LỚN) -->
+    <div id="view-assets" class="hidden space-y-3.5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 class="text-sm font-bold text-white">Kế hoạch Trả góp đang chạy</h2>
-          <p class="text-xs text-slate-400">Tách tổng nợ cam kết khỏi dòng tiền mặt hàng tháng</p>
+          <h2 class="text-sm font-bold text-white">Danh mục Đầu tư & Tài sản (Tính Lãi/Lỗ)</h2>
+          <p class="text-[11px] text-slate-400">CCQ, Cổ phiếu, Vàng (SL × Giá) & Đất đai, Nhà cửa, Xe cộ</p>
         </div>
-        <button onclick="openModal('addInstallmentModal')" class="px-3 py-1.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-semibold">
-          + Thêm khoản góp
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button id="syncPricesBtn" onclick="syncMarketPricesOnline()" class="px-2.5 py-1.5 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-semibold hover:bg-sky-500/30 transition">
+            🔄 Check giá Online
+          </button>
+          <button onclick="openAssetModal()" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold">
+            + Thêm Tài sản
+          </button>
+        </div>
       </div>
-      <div id="installmentList" class="space-y-2.5"></div>
-    </div>
 
-    <!-- TAB 3: ASSETS -->
-    <div id="view-assets" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-sm font-bold text-white">Danh mục Tài sản Tích lũy (Asset Vault)</h2>
-          <p class="text-xs text-slate-400">Chứng chỉ quỹ, Cổ phiếu, Chơi họ & Hạ tầng sinh lợi</p>
-        </div>
-        <button onclick="openModal('addAssetModal')" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-semibold">
-          + Cập nhật tài sản
-        </button>
-      </div>
+      <div id="marketSyncStatus" class="hidden p-3 rounded-xl bg-sky-950/50 border border-sky-500/30 text-xs text-sky-200 leading-relaxed"></div>
+
+      <!-- Tỷ trọng phân bổ tài sản -->
+      <div id="assetAllocationBar" class="glass rounded-2xl p-3.5 space-y-2"></div>
+
+      <!-- Danh sách chi tiết -->
       <div id="assetList" class="space-y-2.5"></div>
     </div>
 
-    <!-- TAB 4: HISTORY -->
+    <!-- TAB 3: NỢ & TRẢ GÓP -->
+    <div id="view-debts" class="hidden space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">Kê khai Khoản Nợ & Trả góp</h2>
+          <p class="text-[11px] text-slate-400">Tách tổng dư nợ gốc khỏi áp lực dòng tiền trả từng tháng</p>
+        </div>
+        <button onclick="openDebtModal()" class="px-3 py-1.5 rounded-xl bg-rose-500 text-white text-xs font-bold shrink-0">
+          + Thêm Khoản Nợ
+        </button>
+      </div>
+      <div id="debtList" class="space-y-2.5"></div>
+    </div>
+
+    <!-- TAB 4: LỊCH SỬ GIAO DỊCH -->
     <div id="view-history" class="hidden space-y-3">
       <div class="flex items-center justify-between">
         <select id="filterLedger" onchange="renderHistory()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
           <option value="ALL">Tất cả 3 Sổ</option>
           <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
-          <option value="ASSET">Sổ 2: Tích sản & Đầu tư</option>
+          <option value="ASSET">Sổ 2: Đầu tư & Tích sản</option>
           <option value="ESCROW">Sổ 3: Mua hộ & Công ty</option>
         </select>
         <span class="text-xs text-slate-400" id="txCountLabel">0 giao dịch</span>
@@ -190,6 +227,103 @@
     </div>
 
   </main>
+
+  <!-- MODAL: KÊ KHAI / CẬP NHẬT TÀI SẢN & ĐẦU TƯ (HỖ TRỢ SỐ LƯỢNG × ĐƠN GIÁ & ĐỊNH GIÁ TÀI SẢN LỚN) -->
+  <div id="assetModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3 my-auto">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-emerald-400 text-sm" id="assetModalTitle">Kê khai Đầu tư / Tài sản</h3>
+        <button onclick="closeModal('assetModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <input type="hidden" id="editAssetId" />
+
+      <div>
+        <label class="text-[11px] text-slate-400">Nhóm Tài sản / Kênh Đầu tư</label>
+        <select id="asType" onchange="onAssetTypeChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white mt-1">
+          <option value="FUND">Chứng chỉ quỹ (CCQ: DCDS, VESAF, VCBF...)</option>
+          <option value="STOCK">Cổ phiếu (VNM, FPT, HPG...)</option>
+          <option value="GOLD">Vàng tích lũy (SJC / Nhẫn 9999)</option>
+          <option value="REAL_ESTATE">Đất đai / Nhà cửa / Bất động sản</option>
+          <option value="VEHICLE">Xe cộ / Máy móc / Hạ tầng NLMT</option>
+          <option value="CASH_SAVING">Tiền mặt / Sổ tiết kiệm / Chơi họ</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2">
+        <div class="col-span-2">
+          <label class="text-[10px] text-slate-400">Tên tài sản / Mã</label>
+          <input id="asName" type="text" placeholder="VD: Quỹ DCDS, Vàng nhẫn, Đất Ba Vì..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400">Mã tra cứu</label>
+          <input id="asTicker" type="text" placeholder="VD: DCDS, VNM, SJC" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white uppercase" />
+        </div>
+      </div>
+
+      <!-- CHẾ ĐỘ 1: TÍNH THEO SỐ LƯỢNG × ĐƠN GIÁ (CCQ, CỔ PHIẾU, VÀNG) -->
+      <div id="unitPricingFields" class="space-y-2.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+        <div class="text-[11px] font-semibold text-sky-300">📊 Định giá theo Số lượng × Đơn giá thị trường</div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400" id="lblQty">Số lượng (CCQ/CP/Chỉ)</label>
+            <input id="asQty" type="number" step="any" oninput="recalcUnitPreview()" placeholder="VD: 100000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Giá mua TB / đv</label>
+            <input id="asBuyPrice" type="number" step="any" oninput="recalcUnitPreview()" placeholder="VD: 25000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Giá hôm nay / đv</label>
+            <input id="asCurrentPrice" type="number" step="any" oninput="recalcUnitPreview()" placeholder="VD: 28500" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-semibold" />
+          </div>
+        </div>
+        <div id="unitPreviewBox" class="text-[11px] text-slate-300 flex justify-between pt-1 border-t border-slate-800">
+          <span>Vốn: 0 ₫</span>
+          <span>Hiện tại: 0 ₫</span>
+        </div>
+      </div>
+
+      <!-- CHẾ ĐỘ 2: ĐỊNH GIÁ TỔNG (ĐẤT ĐAI, NHÀ CỬA, XE CỘ, TIỀN MẶT) -->
+      <div id="lumpPricingFields" class="hidden space-y-2.5 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+        <div class="text-[11px] font-semibold text-amber-300">🏠 Định giá Ước tính Tài sản (So với lúc mua)</div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400">Giá gốc lúc mua / Nạp (VNĐ)</label>
+            <input id="asInvestedLump" type="number" oninput="recalcLumpFromValues()" placeholder="VD: 500000000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Giá ước tính hôm nay (VNĐ)</label>
+            <input id="asCurrentLump" type="number" oninput="recalcLumpFromValues()" placeholder="VD: 620000000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-semibold" />
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+            <span>Hoặc kéo thanh ước lượng % tăng/giảm giá trị:</span>
+            <span id="lumpPctLabel" class="font-bold text-sky-300">0%</span>
+          </div>
+          <input id="asPctSlider" type="range" min="-60" max="200" step="1" value="0" oninput="recalcLumpFromSlider()" class="w-full accent-emerald-400" />
+        </div>
+      </div>
+
+      <input id="asNote" type="text" placeholder="Ghi chú (VD: Vị trí đất, đời xe, ngày mua...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+      <button onclick="saveAsset()" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">Lưu & Tính Lãi/Lỗ</button>
+    </div>
+  </div>
+
+  <!-- MODAL: HƯỚNG DẪN CÀI PWA -->
+  <div id="pwaHelpModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-sm rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-emerald-400 text-sm">📲 Thêm FinGuard AI ra Màn hình chính</h3>
+        <button onclick="closeModal('pwaHelpModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-700 space-y-2 text-xs text-slate-200">
+        <div><b>• Trên iPhone (Safari):</b> Bấm biểu tượng <b>Chia sẻ (⬆️)</b> ở thanh dưới cùng $\rightarrow$ chọn <b>"Thêm vào MH chính" (Add to Home Screen)</b>.</div>
+        <div><b>• Trên Android (Chrome):</b> Bấm dấu <b>3 chấm (⋮)</b> góc trên bên phải $\rightarrow$ chọn <b>"Cài đặt ứng dụng" / "Thêm vào màn hình chính"</b>.</div>
+      </div>
+      <button onclick="closeModal('pwaHelpModal')" class="w-full py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">Đã hiểu</button>
+    </div>
+  </div>
 
   <!-- MODAL: PRE-PURCHASE AI COACH -->
   <div id="preBuyModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -213,6 +347,46 @@
     </div>
   </div>
 
+  <!-- MODAL: KÊ KHAI / SỬA KHOẢN NỢ & TRẢ GÓP -->
+  <div id="debtModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-rose-400 text-sm" id="debtModalTitle">Kê khai Khoản Nợ / Trả góp</h3>
+        <button onclick="closeModal('debtModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <input type="hidden" id="editDebtId" />
+      <div>
+        <label class="text-[11px] text-slate-400">Hình thức nợ</label>
+        <select id="debtType" onchange="toggleDebtFields()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white mt-1">
+          <option value="INSTALLMENT">Trả góp định kỳ hàng tháng (Thẻ tín dụng / Mua trả góp)</option>
+          <option value="LOAN">Vay người thân / Vay ngân hàng trả linh hoạt</option>
+        </select>
+      </div>
+      <input id="debtTitle" type="text" placeholder="Tên khoản nợ (VD: Trả góp thẻ tín dụng, Vay xây nhà...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      
+      <div id="installmentFields" class="space-y-2.5">
+        <input id="debtMonthly" type="number" placeholder="Số tiền phải trả MỖI THÁNG (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-400">Số kỳ CÒN LẠI (từ T12/2026)</label>
+            <input id="debtRemainMonths" type="number" placeholder="VD: 6" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400">Tổng số kỳ ban đầu</label>
+            <input id="debtTotalMonths" type="number" placeholder="VD: 12" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+          </div>
+        </div>
+      </div>
+
+      <div id="loanFields" class="hidden space-y-2.5">
+        <input id="debtLoanRemain" type="number" placeholder="Số dư nợ gốc còn lại hôm nay (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      </div>
+
+      <input id="debtNote" type="text" placeholder="Ghi chú hạn thanh toán / Lãi suất..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <button onclick="saveDebt()" class="w-full py-2.5 rounded-xl bg-rose-500 text-white font-bold text-sm">Lưu Khoản Nợ</button>
+    </div>
+  </div>
+
   <!-- MODAL: MANUAL TRANSACTION -->
   <div id="manualTxModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
@@ -223,49 +397,17 @@
       <input id="mDate" type="date" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
       <select id="mLedger" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
         <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
-        <option value="ASSET">Sổ 2: Tích sản (CCQ / CK / Chơi họ)</option>
+        <option value="ASSET">Sổ 2: Đầu tư & Tích sản</option>
         <option value="ESCROW">Sổ 3: Mua hộ / Chi phí Công ty</option>
       </select>
       <select id="mDirection" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-        <option value="OUT">Chi ra / Nạp tích sản</option>
+        <option value="OUT">Chi ra / Nạp đầu tư</option>
         <option value="IN">Thu về / Hoàn ứng</option>
       </select>
-      <input id="mCategory" type="text" placeholder="Danh mục (VD: Ăn uống, Lương cố định, CCQ...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="mCategory" type="text" placeholder="Danh mục (VD: Ăn uống, Lương, CCQ, Vàng...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
       <input id="mAmount" type="number" placeholder="Số tiền (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="mMemo" type="text" placeholder="Ghi chú chi tiết (Bắt buộc nếu > 1 triệu)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="mMemo" type="text" placeholder="Ghi chú chi tiết (Bắt buộc nếu >= 1 triệu)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
       <button onclick="saveManualTx()" class="w-full py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu giao dịch</button>
-    </div>
-  </div>
-
-  <!-- MODAL: ADD INSTALLMENT -->
-  <div id="addInstallmentModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-white text-sm">Thêm Khoản Trả Góp</h3>
-        <button onclick="closeModal('addInstallmentModal')" class="text-slate-400 hover:text-white">✕</button>
-      </div>
-      <input id="instTitle" type="text" placeholder="Tên khoản trả góp (VD: Hệ thống NLMT, Sửa nhà...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="instTotal" type="number" placeholder="Tổng giá trị gốc (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="instMonthly" type="number" placeholder="Số tiền trả góp mỗi tháng (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <div class="grid grid-cols-2 gap-2">
-        <input id="instMonths" type="number" placeholder="Tổng số kỳ (tháng)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-        <input id="instPaid" type="number" placeholder="Số kỳ đã trả" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      </div>
-      <button onclick="saveInstallment()" class="w-full py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu kế hoạch trả góp</button>
-    </div>
-  </div>
-
-  <!-- MODAL: ADD ASSET -->
-  <div id="addAssetModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-white text-sm">Cập nhật Danh mục Tài sản</h3>
-        <button onclick="closeModal('addAssetModal')" class="text-slate-400 hover:text-white">✕</button>
-      </div>
-      <input id="asName" type="text" placeholder="Tên tài sản (VD: Chứng chỉ quỹ, Cổ phiếu, Chơi họ...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="asInvested" type="number" placeholder="Tổng vốn gốc đã nạp (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <input id="asCurrent" type="number" placeholder="Giá trị thị trường hiện tại (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
-      <button onclick="saveAsset()" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">Lưu tài sản</button>
     </div>
   </div>
 
@@ -276,8 +418,8 @@
         <h3 class="font-bold text-white text-sm">⚙️ Cấu hình AI & Dữ liệu</h3>
         <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white">✕</button>
       </div>
-      <div class="space-y-2">
-        <label class="text-xs text-slate-300 font-medium">Gemini API Key (Lưu cục bộ trên trình duyệt)</label>
+      <div class="space-y-1.5">
+        <label class="text-xs text-slate-300 font-medium">Gemini API Key (Lưu cục bộ trên máy bạn)</label>
         <input id="cfgApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
       </div>
       <div class="grid grid-cols-2 gap-2">
@@ -300,15 +442,84 @@
         </label>
         <div class="grid grid-cols-2 gap-2">
           <button onclick="exportBackup()" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-emerald-300">📤 Xuất Backup JSON</button>
-          <button onclick="resetDemoData()" class="py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-xs text-rose-300">🗑️ Reset dữ liệu mẫu</button>
+          <label class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-center text-xs text-amber-300 cursor-pointer">
+            📥 Khôi phục JSON
+            <input type="file" accept=".json" class="hidden" onchange="importBackup(event)" />
+          </label>
         </div>
+        <button onclick="clearForFreshStart()" class="w-full py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-xs text-rose-300">
+          🧹 Xóa dữ liệu mẫu để bắt đầu kê khai mới từ hôm nay
+        </button>
       </div>
     </div>
   </div>
 
 <script>
-// ==================== STATE & STORAGE ====================
-const STORAGE_KEY = 'finguard_ai_state_v1';
+// ==================== 1. SINGLE-FILE PWA MANIFEST & SERVICE WORKER ====================
+(function setupPWA() {
+  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0b1120"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#34d399"/></linearGradient></defs><rect x="48" y="48" width="416" height="416" rx="88" fill="url(#g)"/><text x="256" y="315" font-family="sans-serif" font-weight="800" font-size="190" text-anchor="middle" fill="#0b1120">FG</text></svg>`;
+  const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+
+  const appleIcon = document.createElement('link');
+  appleIcon.rel = 'apple-touch-icon';
+  appleIcon.href = iconUrl;
+  document.head.appendChild(appleIcon);
+
+  const manifest = {
+    name: 'FinGuard AI — Quản trị Tài sản & Chi tiêu',
+    short_name: 'FinGuard AI',
+    start_url: location.href,
+    display: 'standalone',
+    background_color: '#0b1120',
+    theme_color: '#0b1120',
+    icons: [{ src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const manifestLink = document.createElement('link');
+  manifestLink.rel = 'manifest';
+  manifestLink.href = URL.createObjectURL(manifestBlob);
+  document.head.appendChild(manifestLink);
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    const swCode = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => self.clients.claim());
+      self.addEventListener('fetch', e => {
+        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+  }
+})();
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installPwaBtn');
+  if (btn) btn.classList.add('animate-pulse');
+});
+
+async function triggerPwaInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      document.getElementById('installPwaBtn').style.display = 'none';
+    }
+    deferredPrompt = null;
+  } else {
+    openModal('pwaHelpModal');
+  }
+}
+
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+  document.getElementById('installPwaBtn').style.display = 'none';
+}
+
+// ==================== 2. STATE & STORAGE ====================
+const STORAGE_KEY = 'finguard_ai_state_v3';
 
 const defaultState = {
   settings: {
@@ -318,20 +529,54 @@ const defaultState = {
   },
   transactions: [
     { id: 1, date: '2026-11-09', amount: 6000000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 1', verified: true },
-    { id: 2, date: '2026-11-13', amount: 10850000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 2', verified: true },
-    { id: 3, date: '2026-11-13', amount: 2000000, direction: 'OUT', ledger: 'ASSET', category: 'Chơi họ', memo: 'Đóng họ định kỳ T11', verified: true },
-    { id: 4, date: '2026-11-16', amount: 1000000, direction: 'OUT', ledger: 'ASSET', category: 'Chứng chỉ quỹ', memo: 'Mua CCQ định kỳ', verified: true },
-    { id: 5, date: '2026-11-21', amount: 4800000, direction: 'OUT', ledger: 'PERSONAL', category: 'Đi lại', memo: 'Sửa xe ô tô', verified: true },
-    { id: 6, date: '2026-11-22', amount: 697925, direction: 'OUT', ledger: 'ESCROW', category: 'Mua hộ', memo: 'Chênh lệch mua hộ tồn đọng chờ thu hồi', verified: true }
-  ],
-  installments: [
-    { id: 101, title: 'Hệ thống Điện NLMT (Pin + Biến tần)', total: 47281755, monthly: 2150000, months: 12, paid: 8 },
-    { id: 102, title: 'Khoản gia đình / Sửa nhà (T8)', total: 27000000, monthly: 2250000, months: 12, paid: 3 }
+    { id: 2, date: '2026-11-13', amount: 10850000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 2', verified: true }
   ],
   assets: [
-    { id: 201, name: 'Chứng chỉ quỹ & Cổ phiếu', invested: 17635000, current: 18450000 },
-    { id: 202, name: 'Quỹ Chơi họ tích lũy', invested: 14000000, current: 14000000 },
-    { id: 203, name: 'Hạ tầng NLMT (Tài sản giảm tiền điện)', invested: 47281755, current: 45000000 }
+    {
+      id: 201,
+      type: 'FUND',
+      pricingMode: 'UNIT',
+      name: 'Chứng chỉ quỹ DCDS (Mẫu)',
+      ticker: 'DCDS',
+      qty: 200,
+      buyPrice: 78000,
+      currentPrice: 82500,
+      invested: 15600000,
+      current: 16500000,
+      lastUpdated: '26/11/2026',
+      note: 'Tự động nhân SL × Giá NAV'
+    },
+    {
+      id: 202,
+      type: 'GOLD',
+      pricingMode: 'UNIT',
+      name: 'Vàng nhẫn 9999 (Mẫu)',
+      ticker: 'NHAN9999',
+      qty: 2,
+      buyPrice: 7800000,
+      currentPrice: 8450000,
+      invested: 15600000,
+      current: 16900000,
+      lastUpdated: '26/11/2026',
+      note: 'Đơn vị: Chỉ'
+    },
+    {
+      id: 203,
+      type: 'VEHICLE',
+      pricingMode: 'LUMP',
+      name: 'Ô tô Civic 2008 + Hệ thống NLMT',
+      ticker: '',
+      qty: 0,
+      buyPrice: 0,
+      currentPrice: 0,
+      invested: 260000000,
+      current: 235000000,
+      lastUpdated: '26/11/2026',
+      note: 'Ước tính giá trị thị trường hiện tại'
+    }
+  ],
+  debts: [
+    { id: 101, type: 'INSTALLMENT', title: 'Trả góp Hệ thống NLMT', monthly: 2150000, remainMonths: 4, totalMonths: 12, loanRemain: 0, note: 'Còn 4 kỳ cuối' }
   ]
 };
 
@@ -346,22 +591,63 @@ function formatVND(num) {
   return new Intl.NumberFormat('vi-VN').format(Math.round(num || 0)) + ' ₫';
 }
 
+function formatNum(num) {
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(num || 0);
+}
+
 function getCurrentMonthPrefix() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-// ==================== CORE CALCULATIONS & RENDER ====================
+// ==================== 3. CORE RENDER & CALCULATIONS ====================
+const assetTypeMeta = {
+  FUND: { label: 'Chứng chỉ quỹ', unitName: 'CCQ', color: 'bg-sky-400', badge: 'bg-sky-500/20 text-sky-300', mode: 'UNIT' },
+  STOCK: { label: 'Cổ phiếu', unitName: 'CP', color: 'bg-indigo-400', badge: 'bg-indigo-500/20 text-indigo-300', mode: 'UNIT' },
+  GOLD: { label: 'Vàng tích lũy', unitName: 'Chỉ', color: 'bg-amber-400', badge: 'bg-amber-500/20 text-amber-300', mode: 'UNIT' },
+  REAL_ESTATE: { label: 'Đất đai / Nhà cửa', unitName: '', color: 'bg-rose-400', badge: 'bg-rose-500/20 text-rose-300', mode: 'LUMP' },
+  VEHICLE: { label: 'Xe cộ / Hạ tầng', unitName: '', color: 'bg-purple-400', badge: 'bg-purple-500/20 text-purple-300', mode: 'LUMP' },
+  CASH_SAVING: { label: 'Tiền mặt / Họ / Tiết kiệm', unitName: '', color: 'bg-emerald-400', badge: 'bg-emerald-500/20 text-emerald-300', mode: 'LUMP' }
+};
+
 function renderAll() {
   const monthPrefix = getCurrentMonthPrefix();
-  document.getElementById('headerMonthLabel').innerText = `Tháng ${monthPrefix.split('-')[1]}/${monthPrefix.split('-')[0]}`;
-
   const monthTxs = state.transactions.filter(t => t.date.startsWith(monthPrefix));
+
+  // Recalculate each asset's current & invested accurately
+  let totalInvested = 0;
+  let totalAssets = 0;
+  state.assets.forEach(a => {
+    if (a.pricingMode === 'UNIT') {
+      a.invested = (Number(a.qty) || 0) * (Number(a.buyPrice) || 0);
+      a.current = (Number(a.qty) || 0) * (Number(a.currentPrice) || 0);
+    }
+    totalInvested += Number(a.invested || 0);
+    totalAssets += Number(a.current || 0);
+  });
+
+  const totalPortfolioPnl = totalAssets - totalInvested;
+  const pnlPctTotal = totalInvested > 0 ? ((totalPortfolioPnl / totalInvested) * 100).toFixed(1) : 0;
+
+  const totalDebts = state.debts.reduce((s, d) => {
+    return s + (d.type === 'INSTALLMENT' ? (Number(d.monthly || 0) * Number(d.remainMonths || 0)) : Number(d.loanRemain || 0));
+  }, 0);
+  const netWorth = totalAssets - totalDebts;
+
+  document.getElementById('netWorthValue').innerText = formatVND(netWorth);
+  document.getElementById('netWorthValue').className = `text-2xl font-bold mt-0.5 ${netWorth >= 0 ? 'text-white' : 'text-rose-400'}`;
+
+  const pnlEl = document.getElementById('totalPortfolioPnl');
+  pnlEl.innerText = `Lãi/Lỗ đầu tư & định giá: ${totalPortfolioPnl >= 0 ? '+' : ''}${formatVND(totalPortfolioPnl)} (${totalPortfolioPnl >= 0 ? '+' : ''}${pnlPctTotal}%)`;
+  pnlEl.className = `text-[11px] mt-0.5 font-medium ${totalPortfolioPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+  document.getElementById('totalGrossAssets').innerText = formatVND(totalAssets);
+  document.getElementById('totalGrossDebts').innerText = formatVND(totalDebts);
 
   // Sổ 1: Personal
   const pIn = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
   const pOutDirect = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
-  const activeInstMonthly = state.installments.filter(i => i.paid < i.months).reduce((s, i) => s + i.monthly, 0);
+  const activeInstMonthly = state.debts.filter(d => d.type === 'INSTALLMENT' && d.remainMonths > 0).reduce((s, d) => s + Number(d.monthly || 0), 0);
   const pOutTotal = pOutDirect + activeInstMonthly;
 
   document.getElementById('statPersonalIn').innerText = formatVND(pIn);
@@ -371,20 +657,17 @@ function renderAll() {
   pNetEl.innerText = (pNet >= 0 ? '+' : '') + formatVND(pNet);
   pNetEl.className = `text-lg font-bold mt-1 ${pNet >= 0 ? 'text-white' : 'text-rose-400'}`;
 
-  // Sổ 2: Asset
-  const assetTotal = state.assets.reduce((s, a) => s + a.current, 0);
+  // Sổ 2: Asset Month
   const assetMonth = monthTxs.filter(t => t.ledger === 'ASSET' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
   const savingRate = pIn > 0 ? Math.round((assetMonth / pIn) * 100) : 0;
-
-  document.getElementById('statAssetTotal').innerText = formatVND(assetTotal);
   document.getElementById('statAssetMonth').innerText = formatVND(assetMonth);
   document.getElementById('statSavingRate').innerText = `${savingRate}% thu nhập`;
+  document.getElementById('statGoalMini').innerText = formatVND(state.settings.assetGoal);
 
   // Sổ 3: Escrow
   const escOut = state.transactions.filter(t => t.ledger === 'ESCROW' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
   const escIn = state.transactions.filter(t => t.ledger === 'ESCROW' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
   const escPending = Math.max(0, escOut - escIn);
-
   document.getElementById('statEscrowOut').innerText = formatVND(escOut);
   document.getElementById('statEscrowIn').innerText = formatVND(escIn);
   document.getElementById('statEscrowPending').innerText = formatVND(escPending);
@@ -399,7 +682,7 @@ function renderAll() {
 
   const badge = document.getElementById('debtStatusBadge');
   if (activeInstMonthly > maxInstCap) {
-    badge.innerText = '🚨 Vượt trần nợ 25% — Khóa trả góp mới';
+    badge.innerText = '🚨 Vượt trần trả góp 25%';
     badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/20 text-rose-300';
   } else {
     badge.innerText = '✅ Dòng tiền an toàn';
@@ -415,69 +698,130 @@ function renderAll() {
   document.getElementById('funCapText').innerText = `${formatVND(funSpent)} / 150.000 ₫`;
   document.getElementById('funCapBar').style.width = `${funPct}%`;
 
-  // Alerts (Giao dịch > 1tr thiếu memo hoặc Công nợ mua hộ chưa thu hồi)
+  // Alerts
   const alertsBox = document.getElementById('alertsBox');
   alertsBox.innerHTML = '';
   const unverified = state.transactions.filter(t => t.amount >= 1000000 && (!t.memo || t.memo.trim() === ''));
   if (unverified.length > 0) {
     alertsBox.innerHTML += `<div class="p-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-xs text-rose-200">
-      ⚠️ Có <b>${unverified.length} giao dịch lớn (&ge; 1 triệu)</b> chưa có ghi chú rõ ràng. Hãy cập nhật để tránh thất thoát dấu vết.
+      ⚠️ Có <b>${unverified.length} giao dịch lớn (&ge; 1 triệu)</b> chưa có ghi chú rõ ràng.
     </div>`;
   }
   if (escPending > 0) {
     alertsBox.innerHTML += `<div class="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-xs text-amber-200">
-      📌 Đang có <b>${formatVND(escPending)}</b> tiền mua hộ / tạm ứng công ty chưa thu hồi về ví.
+      📌 Đang có <b>${formatVND(escPending)}</b> tiền mua hộ / tạm ứng công ty chưa thu hồi.
     </div>`;
   }
 
-  renderInstallments();
-  renderAssets();
+  renderAssets(totalAssets);
+  renderDebts();
   renderHistory();
 }
 
-function renderInstallments() {
-  const list = document.getElementById('installmentList');
-  list.innerHTML = state.installments.map(item => {
-    const remainMonths = Math.max(0, item.months - item.paid);
-    const remainDebt = remainMonths * item.monthly;
-    const pct = Math.round((item.paid / item.months) * 100);
+function renderAssets(totalAssets) {
+  const allocBox = document.getElementById('assetAllocationBar');
+  if (totalAssets > 0) {
+    const grouped = {};
+    state.assets.forEach(a => { grouped[a.type] = (grouped[a.type] || 0) + Number(a.current || 0); });
+    const barSegments = Object.entries(grouped).map(([type, val]) => {
+      const pct = ((val / totalAssets) * 100).toFixed(1);
+      const meta = assetTypeMeta[type] || assetTypeMeta.FUND;
+      return `<div class="${meta.color} h-full" style="width:${pct}%" title="${meta.label}: ${pct}%"></div>`;
+    }).join('');
+    const legends = Object.entries(grouped).map(([type, val]) => {
+      const pct = ((val / totalAssets) * 100).toFixed(1);
+      const meta = assetTypeMeta[type] || assetTypeMeta.FUND;
+      return `<span class="text-[10px] text-slate-300 flex items-center gap-1"><i class="w-2 h-2 rounded-full ${meta.color} inline-block"></i>${meta.label}: <b>${pct}%</b></span>`;
+    }).join('');
+    allocBox.innerHTML = `
+      <div class="text-[11px] font-semibold text-slate-300">Tỷ trọng Danh mục Tài sản (Theo giá trị thị trường)</div>
+      <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden flex">${barSegments}</div>
+      <div class="flex flex-wrap gap-x-3 gap-y-1 pt-1">${legends}</div>
+    `;
+  } else {
+    allocBox.innerHTML = `<div class="text-xs text-slate-400 text-center py-2">Chưa có tài sản nào. Bấm "+ Thêm Tài sản" để bắt đầu tính lãi/lỗ.</div>`;
+  }
+
+  const list = document.getElementById('assetList');
+  list.innerHTML = state.assets.map(a => {
+    const pnl = a.current - a.invested;
+    const pnlPct = a.invested > 0 ? ((pnl / a.invested) * 100).toFixed(2) : 0;
+    const meta = assetTypeMeta[a.type] || assetTypeMeta.FUND;
+
+    const unitDetailsHtml = a.pricingMode === 'UNIT'
+      ? `<div class="mt-2 p-2.5 rounded-xl bg-slate-900/80 grid grid-cols-3 gap-2 text-[11px] border border-slate-800/80">
+           <div><span class="text-slate-400 block text-[10px]">Số lượng</span><b class="text-white">${formatNum(a.qty)} ${meta.unitName}</b></div>
+           <div><span class="text-slate-400 block text-[10px]">Giá vốn TB</span><b class="text-slate-300">${formatNum(a.buyPrice)} ₫</b></div>
+           <div class="text-right"><span class="text-slate-400 block text-[10px]">Giá hôm nay</span><b class="text-sky-300">${formatNum(a.currentPrice)} ₫</b></div>
+         </div>`
+      : `<div class="mt-2 p-2.5 rounded-xl bg-slate-900/80 flex justify-between text-[11px] border border-slate-800/80">
+           <span class="text-slate-400">Giá mua / Vốn gốc: <b class="text-slate-200">${formatVND(a.invested)}</b></span>
+           <span class="text-slate-400">Ước tính hiện tại</span>
+         </div>`;
+
     return `
       <div class="glass rounded-2xl p-3.5 space-y-2">
         <div class="flex justify-between items-start">
           <div>
-            <div class="font-semibold text-sm text-white">${item.title}</div>
-            <div class="text-[11px] text-slate-400">Tổng gốc: ${formatVND(item.total)} • Còn ${remainMonths}/${item.months} kỳ</div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium ${meta.badge}">${meta.label}</span>
+              ${a.ticker ? `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono">${a.ticker}</span>` : ''}
+            </div>
+            <div class="font-bold text-sm text-white mt-1">${a.name}</div>
           </div>
           <div class="text-right">
-            <div class="font-bold text-sky-400 text-sm">${formatVND(item.monthly)}/tháng</div>
-            <div class="text-[11px] text-slate-400">Dư nợ: ${formatVND(remainDebt)}</div>
+            <div class="font-bold text-white text-sm">${formatVND(a.current)}</div>
+            <div class="text-xs font-semibold ${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+              ${pnl >= 0 ? '▲ +' : '▼ '}${formatVND(pnl)} (${pnl >= 0 ? '+' : ''}${pnlPct}%)
+            </div>
           </div>
         </div>
-        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-          <div class="h-full bg-sky-400" style="width:${pct}%"></div>
-        </div>
-        <div class="flex justify-end gap-2 pt-1">
-          <button onclick="payInstallmentPeriod(${item.id})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-emerald-300">+ Ghi nhận trả 1 kỳ</button>
-          <button onclick="deleteInstallment(${item.id})" class="px-2 py-1 rounded-lg text-[11px] text-slate-500 hover:text-rose-400">Xóa</button>
+
+        ${unitDetailsHtml}
+
+        <div class="flex justify-between items-center pt-1 text-[10px] text-slate-500">
+          <span>${a.note || ''} ${a.lastUpdated ? `• Cập nhật: ${a.lastUpdated}` : ''}</span>
+          <div class="flex gap-2">
+            <button onclick="openAssetModal(${a.id})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-sky-300 font-medium">✏️ Cập nhật giá / SL</button>
+            <button onclick="deleteAsset(${a.id})" class="px-2 py-1 rounded-lg text-[11px] text-slate-500 hover:text-rose-400">Xóa</button>
+          </div>
         </div>
       </div>`;
   }).join('');
 }
 
-function renderAssets() {
-  const list = document.getElementById('assetList');
-  list.innerHTML = state.assets.map(a => {
-    const pnl = a.current - a.invested;
-    const pnlPct = a.invested > 0 ? ((pnl / a.invested) * 100).toFixed(1) : 0;
+function renderDebts() {
+  const list = document.getElementById('debtList');
+  if (state.debts.length === 0) {
+    list.innerHTML = `<div class="glass rounded-2xl p-4 text-xs text-slate-400 text-center">Không có khoản nợ hay trả góp nào.</div>`;
+    return;
+  }
+  list.innerHTML = state.debts.map(d => {
+    const isInst = d.type === 'INSTALLMENT';
+    const remainDebt = isInst ? (d.monthly * d.remainMonths) : d.loanRemain;
+    const paidMonths = isInst ? Math.max(0, d.totalMonths - d.remainMonths) : 0;
+    const pct = isInst && d.totalMonths > 0 ? Math.round((paidMonths / d.totalMonths) * 100) : 0;
+
     return `
-      <div class="glass rounded-2xl p-3.5 flex justify-between items-center">
-        <div>
-          <div class="font-semibold text-sm text-white">${a.name}</div>
-          <div class="text-[11px] text-slate-400">Vốn gốc: ${formatVND(a.invested)}</div>
+      <div class="glass rounded-2xl p-3.5 space-y-2 border-l-4 ${isInst ? 'border-l-sky-400' : 'border-l-rose-400'}">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${isInst ? 'bg-sky-500/20 text-sky-300' : 'bg-rose-500/20 text-rose-300'}">
+              ${isInst ? `Trả góp (Còn ${d.remainMonths}/${d.totalMonths} kỳ)` : 'Vay gốc linh hoạt'}
+            </span>
+            <div class="font-bold text-sm text-white mt-1">${d.title}</div>
+            <div class="text-[11px] text-slate-400">${d.note || ''}</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-rose-400 text-sm">Dư nợ: ${formatVND(remainDebt)}</div>
+            ${isInst ? `<div class="text-[11px] text-sky-300 font-medium">Trả: ${formatVND(d.monthly)}/tháng</div>` : ''}
+          </div>
         </div>
-        <div class="text-right">
-          <div class="font-bold text-emerald-400 text-sm">${formatVND(a.current)}</div>
-          <div class="text-[11px] ${pnl >= 0 ? 'text-emerald-300' : 'text-rose-400'}">${pnl >= 0 ? '+' : ''}${formatVND(pnl)} (${pnlPct}%)</div>
+        ${isInst ? `<div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-400" style="width:${pct}%"></div></div>` : ''}
+        <div class="flex justify-end gap-2 pt-1 border-t border-slate-800/70">
+          ${isInst ? `<button onclick="payDebtPeriod(${d.id})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-emerald-300">✅ Đã trả 1 kỳ</button>` : ''}
+          <button onclick="openDebtModal(${d.id})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-sky-300">✏️ Sửa</button>
+          <button onclick="deleteDebt(${d.id})" class="px-2 py-1 rounded-lg text-[11px] text-slate-500 hover:text-rose-400">Xóa</button>
         </div>
       </div>`;
   }).join('');
@@ -492,7 +836,7 @@ function renderHistory() {
   document.getElementById('txCountLabel').innerText = `${txs.length} giao dịch`;
   const badgeMap = {
     PERSONAL: '<span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px]">Cá nhân</span>',
-    ASSET: '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Tích sản</span>',
+    ASSET: '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Đầu tư/Tích sản</span>',
     ESCROW: '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px]">Mua hộ/Cty</span>'
   };
 
@@ -516,8 +860,8 @@ function renderHistory() {
   `).join('');
 }
 
-// ==================== GEMINI AI INTEGRATION ====================
-async function callGemini(promptText, isJson = false) {
+// ==================== 4. GEMINI AI ENGINE + ONLINE PRICE CHECK ====================
+async function callGemini(promptText, isJson = false, useSearch = false) {
   const apiKey = state.settings.apiKey;
   if (!apiKey) {
     alert('Vui lòng bấm biểu tượng ⚙️ góc phải để nhập Gemini API Key trước!');
@@ -530,6 +874,9 @@ async function callGemini(promptText, isJson = false) {
     contents: [{ parts: [{ text: promptText }] }],
     generationConfig: isJson ? { responseMimeType: "application/json" } : {}
   };
+  if (useSearch) {
+    body.tools = [{ google_search: {} }];
+  }
 
   const res = await fetch(url, {
     method: 'POST',
@@ -539,6 +886,65 @@ async function callGemini(promptText, isJson = false) {
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.candidates[0].content.parts[0].text;
+}
+
+// Tự động tra cứu giá CCQ, Cổ phiếu, Vàng hôm nay qua Google Search Grounding
+async function syncMarketPricesOnline() {
+  const unitAssets = state.assets.filter(a => a.pricingMode === 'UNIT');
+  if (unitAssets.length === 0) {
+    return alert('Bạn chưa có tài sản nào thuộc nhóm CCQ, Cổ phiếu hoặc Vàng để tra cứu giá online!');
+  }
+
+  const btn = document.getElementById('syncPricesBtn');
+  const statusBox = document.getElementById('marketSyncStatus');
+  btn.disabled = true;
+  btn.innerText = '⏳ Đang check giá...';
+
+  const itemsQuery = unitAssets.map(a => `- ID ${a.id}: ${a.name} (Mã: ${a.ticker || a.name}, Loại: ${a.type})`).join('\n');
+  const prompt = `
+Hãy tra cứu giá thị trường mới nhất hôm nay tại Việt Nam (đơn vị VNĐ) cho danh sách tài sản sau:
+${itemsQuery}
+
+Quy tắc đơn vị giá:
+- Nếu là Cổ phiếu (STOCK): giá 1 cổ phiếu tính bằng VNĐ (VD: 65000 nếu 65.0).
+- Nếu là Chứng chỉ quỹ (FUND): giá NAV/CCQ mới nhất tính bằng VNĐ (VD: 82500).
+- Nếu là Vàng (GOLD): giá mua vào/bán ra tính theo 1 CHỈ vàng VNĐ (VD: 8450000 nếu 84.5 triệu/lượng).
+
+Chỉ trả về JSON thuần túy (không markdown) theo định dạng:
+{
+  "prices": [
+    { "id": number, "price": number, "source_note": "string ngắn gọn giá & ngày" }
+  ],
+  "summary": "Tóm tắt biến động thị trường hôm nay trong 1-2 câu"
+}`;
+
+  try {
+    const raw = await callGemini(prompt, true, true);
+    if (!raw) return;
+    const cleanJson = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleanJson);
+    const todayStr = new Date().toLocaleDateString('vi-VN');
+
+    let updatedCount = 0;
+    parsed.prices.forEach(p => {
+      const target = state.assets.find(a => a.id == p.id);
+      if (target && p.price > 0) {
+        target.currentPrice = Number(p.price);
+        target.lastUpdated = todayStr;
+        if (p.source_note) target.note = p.source_note;
+        updatedCount++;
+      }
+    });
+
+    saveState();
+    statusBox.classList.remove('hidden');
+    statusBox.innerHTML = `✅ Đã cập nhật giá thị trường cho <b>${updatedCount}</b> mã đầu tư (${todayStr}).<br><span class="text-slate-300">${parsed.summary}</span>`;
+  } catch (err) {
+    alert('Không thể tự động lấy giá online: ' + err.message + '\nBạn vẫn có thể bấm "✏️ Cập nhật giá / SL" để nhập giá tay.');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '🔄 Check giá Online';
+  }
 }
 
 async function handleAiInput() {
@@ -555,41 +961,106 @@ async function handleAiInput() {
   const prompt = `
 Bạn là FinGuard AI — CFO cá nhân quản trị dòng tiền theo 3 sổ độc lập:
 - PERSONAL: Chi tiêu sinh hoạt cá nhân & gia đình (Ăn uống, Đi lại, Y tế, Nhà cửa, Giải trí/Vietlott) hoặc Lương/Thu nhập.
-- ASSET: Nạp Chứng chỉ quỹ (CCQ), Cổ phiếu (CK), Chơi họ, Vàng, Hạ tầng sinh lợi. (direction="OUT" nghĩa là nạp tiền vào tích sản).
+- ASSET: Mua/Nạp đầu tư tích sản: Chứng chỉ quỹ (FUND), Cổ phiếu (STOCK), Vàng (GOLD), Đất/Nhà (REAL_ESTATE), Xe/Hạ tầng (VEHICLE), Tiền tiết kiệm/Chơi họ (CASH_SAVING).
 - ESCROW: Mua hộ đồ cho người khác, tạm ứng chi phí công ty (Đất Son, Tohoku, mỏ đá...).
 
-Hãy bóc tách câu nhập liệu sau thành danh sách giao dịch JSON và đưa ra 1 lời khuyên/cảnh báo ngắn gọn (tối đa 2 câu) theo nguyên tắc tiết chế & tích sản.
+Nếu người dùng nhập giao dịch mua tài sản có số lượng và đơn giá (VD: "mua 500 ccq DCDS giá 82k" hoặc "mua 1 chỉ vàng 8tr5"), hãy bóc tách chính xác "qty", "unit_price", "ticker", "asset_type".
 Hôm nay là: ${today}.
 Câu nhập liệu: "${text}"
 
 Trả về JSON đúng schema:
 {
   "transactions": [
-    { "date": "YYYY-MM-DD", "amount": number, "direction": "IN" | "OUT", "ledger": "PERSONAL" | "ASSET" | "ESCROW", "category": "string", "memo": "string" }
+    {
+      "date": "YYYY-MM-DD",
+      "amount": number,
+      "direction": "IN" | "OUT",
+      "ledger": "PERSONAL" | "ASSET" | "ESCROW",
+      "category": "string",
+      "asset_type": "FUND" | "STOCK" | "GOLD" | "REAL_ESTATE" | "VEHICLE" | "CASH_SAVING" | null,
+      "ticker": "string | null",
+      "qty": number | null,
+      "unit_price": number | null,
+      "memo": "string"
+    }
   ],
   "advice": "string"
 }`;
 
   try {
-    const raw = await callGemini(prompt, true);
+    const raw = await callGemini(prompt, true, false);
     if (!raw) return;
     const parsed = JSON.parse(raw);
 
     parsed.transactions.forEach(tx => {
+      const amt = Number(tx.amount);
       state.transactions.push({
         id: Date.now() + Math.random(),
         date: tx.date || today,
-        amount: Number(tx.amount),
+        amount: amt,
         direction: tx.direction,
         ledger: tx.ledger,
         category: tx.category,
         memo: tx.memo,
         verified: true
       });
-      // Nếu là nạp tích sản, tự động cộng vào vốn gốc tài sản đầu tiên nếu khớp
-      if (tx.ledger === 'ASSET' && tx.direction === 'OUT' && state.assets.length > 0) {
-        state.assets[0].invested += Number(tx.amount);
-        state.assets[0].current += Number(tx.amount);
+
+      // Cập nhật danh mục Đầu tư & Tính lại Giá vốn bình quân (Weighted Average Cost)
+      if (tx.ledger === 'ASSET' && tx.direction === 'OUT') {
+        const aType = tx.asset_type || 'FUND';
+        const meta = assetTypeMeta[aType] || assetTypeMeta.FUND;
+        const ticker = (tx.ticker || '').toUpperCase();
+
+        let existing = state.assets.find(a =>
+          (ticker && a.ticker && a.ticker.toUpperCase() === ticker) ||
+          (a.type === aType && a.name.toLowerCase().includes(tx.category.toLowerCase()))
+        );
+
+        if (meta.mode === 'UNIT' && tx.qty && tx.unit_price) {
+          const addQty = Number(tx.qty);
+          const addPrice = Number(tx.unit_price);
+          if (existing) {
+            const oldTotalCost = existing.qty * existing.buyPrice;
+            const newTotalQty = existing.qty + addQty;
+            existing.buyPrice = (oldTotalCost + addQty * addPrice) / newTotalQty;
+            existing.qty = newTotalQty;
+            existing.currentPrice = addPrice;
+            existing.lastUpdated = new Date().toLocaleDateString('vi-VN');
+          } else {
+            state.assets.push({
+              id: Date.now() + Math.random(),
+              type: aType,
+              pricingMode: 'UNIT',
+              name: tx.category,
+              ticker: ticker,
+              qty: addQty,
+              buyPrice: addPrice,
+              currentPrice: addPrice,
+              invested: addQty * addPrice,
+              current: addQty * addPrice,
+              lastUpdated: new Date().toLocaleDateString('vi-VN'),
+              note: 'Tự động ghi nhận qua AI'
+            });
+          }
+        } else {
+          if (existing) {
+            existing.invested += amt;
+            existing.current += amt;
+          } else {
+            state.assets.push({
+              id: Date.now() + Math.random(),
+              type: aType,
+              pricingMode: 'LUMP',
+              name: tx.category,
+              ticker: '',
+              qty: 0, buyPrice: 0, currentPrice: 0,
+              invested: amt,
+              current: amt,
+              lastUpdated: new Date().toLocaleDateString('vi-VN'),
+              note: 'Tự động ghi nhận qua AI'
+            });
+          }
+        }
       }
     });
 
@@ -616,7 +1087,7 @@ async function runPrePurchaseCheck() {
   btn.disabled = true;
   btn.innerText = 'AI đang thẩm định...';
 
-  const activeInst = state.installments.filter(i => i.paid < i.months).reduce((s, i) => s + i.monthly, 0);
+  const activeInst = state.debts.filter(d => d.type === 'INSTALLMENT' && d.remainMonths > 0).reduce((s, d) => s + Number(d.monthly || 0), 0);
   const maxCap = state.settings.fixedSalary * 0.25;
   const fv10 = Math.round(price * Math.pow(1.1, 10));
 
@@ -633,7 +1104,7 @@ Hãy đưa ra phán quyết ngắn gọn bằng tiếng Việt gồm:
 2. Phân tích chi phí cơ hội & tác động dòng tiền (3-4 dòng súc tích, thực tế).`;
 
   try {
-    const reply = await callGemini(prompt, false);
+    const reply = await callGemini(prompt, false, false);
     if (reply) {
       resBox.classList.remove('hidden');
       resBox.innerHTML = reply.replace(/\n/g, '<br>');
@@ -646,7 +1117,209 @@ Hãy đưa ra phán quyết ngắn gọn bằng tiếng Việt gồm:
   }
 }
 
-// ==================== CRUD & CSV IMPORT ====================
+// ==================== 5. ASSET MODAL LOGIC (UNIT vs LUMP VALUATION) ====================
+function onAssetTypeChange() {
+  const type = document.getElementById('asType').value;
+  const meta = assetTypeMeta[type] || assetTypeMeta.FUND;
+  const isUnit = meta.mode === 'UNIT';
+  document.getElementById('unitPricingFields').classList.toggle('hidden', !isUnit);
+  document.getElementById('lumpPricingFields').classList.toggle('hidden', isUnit);
+  if (isUnit) {
+    document.getElementById('lblQty').innerText = `Số lượng (${meta.unitName})`;
+  }
+}
+
+function recalcUnitPreview() {
+  const qty = Number(document.getElementById('asQty').value) || 0;
+  const buy = Number(document.getElementById('asBuyPrice').value) || 0;
+  const cur = Number(document.getElementById('asCurrentPrice').value) || 0;
+  const inv = qty * buy;
+  const val = qty * cur;
+  const pnl = val - inv;
+  const pct = inv > 0 ? ((pnl / inv) * 100).toFixed(1) : 0;
+  document.getElementById('unitPreviewBox').innerHTML = `
+    <span>Vốn: <b>${formatVND(inv)}</b></span>
+    <span class="${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">Hiện tại: <b>${formatVND(val)}</b> (${pnl >= 0 ? '+' : ''}${pct}%)</span>
+  `;
+}
+
+function recalcLumpFromSlider() {
+  const inv = Number(document.getElementById('asInvestedLump').value) || 0;
+  const pct = Number(document.getElementById('asPctSlider').value) || 0;
+  document.getElementById('lumpPctLabel').innerText = `${pct >= 0 ? '+' : ''}${pct}%`;
+  if (inv > 0) {
+    document.getElementById('asCurrentLump').value = Math.round(inv * (1 + pct / 100));
+  }
+}
+
+function recalcLumpFromValues() {
+  const inv = Number(document.getElementById('asInvestedLump').value) || 0;
+  const cur = Number(document.getElementById('asCurrentLump').value) || 0;
+  if (inv > 0) {
+    const pct = Math.round(((cur - inv) / inv) * 100);
+    document.getElementById('lumpPctLabel').innerText = `${pct >= 0 ? '+' : ''}${pct}%`;
+    document.getElementById('asPctSlider').value = Math.max(-60, Math.min(200, pct));
+  }
+}
+
+function openAssetModal(id = null) {
+  document.getElementById('editAssetId').value = id || '';
+  if (id) {
+    const a = state.assets.find(x => x.id === id);
+    document.getElementById('assetModalTitle').innerText = 'Cập nhật Giá trị / Số lượng Tài sản';
+    document.getElementById('asType').value = a.type;
+    document.getElementById('asName').value = a.name;
+    document.getElementById('asTicker').value = a.ticker || '';
+    document.getElementById('asQty').value = a.qty || '';
+    document.getElementById('asBuyPrice').value = a.buyPrice || '';
+    document.getElementById('asCurrentPrice').value = a.currentPrice || '';
+    document.getElementById('asInvestedLump').value = a.invested || '';
+    document.getElementById('asCurrentLump').value = a.current || '';
+    document.getElementById('asNote').value = a.note || '';
+    onAssetTypeChange();
+    recalcUnitPreview();
+    recalcLumpFromValues();
+  } else {
+    document.getElementById('assetModalTitle').innerText = 'Kê khai Khoản Đầu tư / Tài sản Mới';
+    document.getElementById('asType').value = 'FUND';
+    document.getElementById('asName').value = '';
+    document.getElementById('asTicker').value = '';
+    document.getElementById('asQty').value = '';
+    document.getElementById('asBuyPrice').value = '';
+    document.getElementById('asCurrentPrice').value = '';
+    document.getElementById('asInvestedLump').value = '';
+    document.getElementById('asCurrentLump').value = '';
+    document.getElementById('asPctSlider').value = 0;
+    document.getElementById('lumpPctLabel').innerText = '0%';
+    document.getElementById('asNote').value = '';
+    onAssetTypeChange();
+    recalcUnitPreview();
+  }
+  openModal('assetModal');
+}
+
+function saveAsset() {
+  const editId = document.getElementById('editAssetId').value;
+  const type = document.getElementById('asType').value;
+  const meta = assetTypeMeta[type] || assetTypeMeta.FUND;
+  const name = document.getElementById('asName').value.trim();
+  const ticker = document.getElementById('asTicker').value.trim().toUpperCase();
+  const note = document.getElementById('asNote').value.trim();
+  if (!name) return alert('Vui lòng nhập tên tài sản / mã đầu tư!');
+
+  let payload = {
+    type,
+    pricingMode: meta.mode,
+    name,
+    ticker,
+    note,
+    lastUpdated: new Date().toLocaleDateString('vi-VN')
+  };
+
+  if (meta.mode === 'UNIT') {
+    const qty = Number(document.getElementById('asQty').value) || 0;
+    const buyPrice = Number(document.getElementById('asBuyPrice').value) || 0;
+    const currentPrice = Number(document.getElementById('asCurrentPrice').value) || buyPrice;
+    Object.assign(payload, {
+      qty, buyPrice, currentPrice,
+      invested: qty * buyPrice,
+      current: qty * currentPrice
+    });
+  } else {
+    const invested = Number(document.getElementById('asInvestedLump').value) || 0;
+    const current = Number(document.getElementById('asCurrentLump').value) || invested;
+    Object.assign(payload, {
+      qty: 0, buyPrice: 0, currentPrice: 0,
+      invested, current
+    });
+  }
+
+  if (editId) {
+    const a = state.assets.find(x => x.id == editId);
+    Object.assign(a, payload);
+  } else {
+    state.assets.push({ id: Date.now(), ...payload });
+  }
+  saveState();
+  closeModal('assetModal');
+}
+
+function deleteAsset(id) {
+  if (!confirm('Xóa tài sản này khỏi danh mục?')) return;
+  state.assets = state.assets.filter(a => a.id !== id);
+  saveState();
+}
+
+// ==================== 6. DEBTS, TRANSACTIONS & SETTINGS ====================
+function toggleDebtFields() {
+  const type = document.getElementById('debtType').value;
+  document.getElementById('installmentFields').classList.toggle('hidden', type !== 'INSTALLMENT');
+  document.getElementById('loanFields').classList.toggle('hidden', type !== 'LOAN');
+}
+
+function openDebtModal(id = null) {
+  document.getElementById('editDebtId').value = id || '';
+  if (id) {
+    const d = state.debts.find(x => x.id === id);
+    document.getElementById('debtModalTitle').innerText = 'Cập nhật Khoản Nợ';
+    document.getElementById('debtType').value = d.type;
+    document.getElementById('debtTitle').value = d.title;
+    document.getElementById('debtMonthly').value = d.monthly || '';
+    document.getElementById('debtRemainMonths').value = d.remainMonths || '';
+    document.getElementById('debtTotalMonths').value = d.totalMonths || '';
+    document.getElementById('debtLoanRemain').value = d.loanRemain || '';
+    document.getElementById('debtNote').value = d.note || '';
+  } else {
+    document.getElementById('debtModalTitle').innerText = 'Kê khai Khoản Nợ / Trả góp Mới';
+    document.getElementById('debtType').value = 'INSTALLMENT';
+    document.getElementById('debtTitle').value = '';
+    document.getElementById('debtMonthly').value = '';
+    document.getElementById('debtRemainMonths').value = '';
+    document.getElementById('debtTotalMonths').value = '';
+    document.getElementById('debtLoanRemain').value = '';
+    document.getElementById('debtNote').value = '';
+  }
+  toggleDebtFields();
+  openModal('debtModal');
+}
+
+function saveDebt() {
+  const editId = document.getElementById('editDebtId').value;
+  const type = document.getElementById('debtType').value;
+  const title = document.getElementById('debtTitle').value.trim();
+  const monthly = Number(document.getElementById('debtMonthly').value) || 0;
+  const remainMonths = Number(document.getElementById('debtRemainMonths').value) || 0;
+  const totalMonths = Number(document.getElementById('debtTotalMonths').value) || remainMonths;
+  const loanRemain = Number(document.getElementById('debtLoanRemain').value) || 0;
+  const note = document.getElementById('debtNote').value.trim();
+
+  if (!title) return alert('Nhập tên khoản nợ!');
+  const payload = { type, title, monthly, remainMonths, totalMonths, loanRemain, note };
+
+  if (editId) {
+    const d = state.debts.find(x => x.id == editId);
+    Object.assign(d, payload);
+  } else {
+    state.debts.push({ id: Date.now(), ...payload });
+  }
+  saveState();
+  closeModal('debtModal');
+}
+
+function payDebtPeriod(id) {
+  const d = state.debts.find(x => x.id === id);
+  if (d && d.remainMonths > 0) {
+    d.remainMonths -= 1;
+    saveState();
+  }
+}
+
+function deleteDebt(id) {
+  if (!confirm('Xóa khoản nợ này?')) return;
+  state.debts = state.debts.filter(d => d.id !== id);
+  saveState();
+}
+
 function saveManualTx() {
   const date = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
   const ledger = document.getElementById('mLedger').value;
@@ -667,48 +1340,22 @@ function deleteTx(id) {
   saveState();
 }
 
-function saveInstallment() {
-  const title = document.getElementById('instTitle').value.trim();
-  const total = Number(document.getElementById('instTotal').value);
-  const monthly = Number(document.getElementById('instMonthly').value);
-  const months = Number(document.getElementById('instMonths').value);
-  const paid = Number(document.getElementById('instPaid').value) || 0;
-  if (!title || !monthly || !months) return alert('Nhập đủ thông tin trả góp!');
-  state.installments.push({ id: Date.now(), title, total: total || monthly * months, monthly, months, paid });
-  saveState();
-  closeModal('addInstallmentModal');
-}
-
-function payInstallmentPeriod(id) {
-  const item = state.installments.find(i => i.id === id);
-  if (item && item.paid < item.months) {
-    item.paid += 1;
-    saveState();
-  }
-}
-
-function deleteInstallment(id) {
-  if (!confirm('Xóa khoản trả góp này?')) return;
-  state.installments = state.installments.filter(i => i.id !== id);
-  saveState();
-}
-
-function saveAsset() {
-  const name = document.getElementById('asName').value.trim();
-  const invested = Number(document.getElementById('asInvested').value);
-  const current = Number(document.getElementById('asCurrent').value);
-  if (!name) return alert('Nhập tên tài sản!');
-  state.assets.push({ id: Date.now(), name, invested, current: current || invested });
-  saveState();
-  closeModal('addAssetModal');
-}
-
 function saveSettings() {
   state.settings.apiKey = document.getElementById('cfgApiKey').value.trim();
   state.settings.fixedSalary = Number(document.getElementById('cfgFixedSalary').value) || 17500000;
   state.settings.assetGoal = Number(document.getElementById('cfgAssetGoal').value) || 4000000;
   saveState();
   closeModal('settingsModal');
+}
+
+function clearForFreshStart() {
+  if (!confirm('Xóa toàn bộ dữ liệu mẫu (Tài sản, Nợ, Giao dịch) để bạn tự kê khai lại từ hôm nay? (API Key vẫn được giữ lại)')) return;
+  state.transactions = [];
+  state.assets = [];
+  state.debts = [];
+  saveState();
+  closeModal('settingsModal');
+  switchTab('assets');
 }
 
 function importKomorebiCSV(event) {
@@ -741,7 +1388,7 @@ function importKomorebiCSV(event) {
       }
     }
 
-    let importedCount = 0;
+    let count = 0;
     rawRows.forEach((r, idx) => {
       const catName = catMap[r.catId] || 'Khác';
       const dateParts = r.dateRaw.split('/');
@@ -749,7 +1396,6 @@ function importKomorebiCSV(event) {
         ? `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`
         : r.dateRaw;
 
-      // Tự động phân loại 3 sổ thông minh từ dữ liệu Komorebi
       let ledger = 'PERSONAL';
       if (['Mua hộ', 'Tiền mua hộ đồ', 'Đất Son'].includes(catName) || /mỏ đá|cty|triển lãm/i.test(r.memo)) {
         ledger = 'ESCROW';
@@ -767,11 +1413,11 @@ function importKomorebiCSV(event) {
         memo: r.memo,
         verified: true
       });
-      importedCount++;
+      count++;
     });
 
     saveState();
-    alert(`Đã import thành công ${importedCount} giao dịch và tự động phân loại vào 3 sổ!`);
+    alert(`Đã import ${count} giao dịch từ Komorebi CSV!`);
     closeModal('settingsModal');
   };
   reader.readAsText(file, 'UTF-8');
@@ -781,19 +1427,32 @@ function exportBackup() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `FinGuard_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `FinGuard_v3_Backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
 }
 
-function resetDemoData() {
-  if (!confirm('Khôi phục về dữ liệu mẫu ban đầu?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
+function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data && data.settings) {
+        state = data;
+        saveState();
+        alert('Khôi phục dữ liệu thành công!');
+        closeModal('settingsModal');
+      }
+    } catch (err) {
+      alert('File backup không hợp lệ!');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
-// ==================== UI NAVIGATION & MODALS ====================
 function switchTab(tab) {
-  ['dashboard', 'installments', 'assets', 'history'].forEach(t => {
+  ['dashboard', 'assets', 'debts', 'history'].forEach(t => {
     document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
     document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === tab);
   });
