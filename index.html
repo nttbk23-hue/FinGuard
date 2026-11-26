@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>FinGuard AI — Quản trị Dòng tiền & Tích sản</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #f8fafc; }
+    .glass { background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.12); }
+    .tab-active { color: #38bdf8; border-bottom: 2px solid #38bdf8; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 glass px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center font-bold text-slate-950">FG</div>
+      <div>
+        <h1 class="font-bold text-sm tracking-tight text-white">FinGuard AI</h1>
+        <p class="text-[11px] text-slate-400" id="headerMonthLabel">Tháng 11/2026</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openModal('preBuyModal')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium hover:bg-amber-500/30 transition">
+        🛡️ Hỏi AI trước khi mua
+      </button>
+      <button onclick="openModal('settingsModal')" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white">
+        ⚙️
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
+
+    <!-- AI QUICK INPUT BAR -->
+    <section class="glass rounded-2xl p-3.5 shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-sky-400 flex items-center gap-1">✨ Nhập nhanh bằng AI (Tự động phân 3 sổ)</span>
+        <button onclick="openModal('manualTxModal')" class="text-[11px] text-slate-400 underline hover:text-white">+ Nhập tay</button>
+      </div>
+      <div class="flex gap-2">
+        <input id="aiInput" type="text" placeholder="VD: đổ xăng 500k, nạp ccq 2tr, ứng mua đồ cty 1tr5..."
+          class="flex-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+          onkeydown="if(event.key==='Enter') handleAiInput()" />
+        <button id="aiSendBtn" onclick="handleAiInput()"
+          class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm transition shrink-0">
+          Ghi
+        </button>
+      </div>
+      <div id="aiFeedback" class="hidden mt-3 p-3 rounded-xl bg-slate-900/90 border border-sky-500/30 text-xs text-slate-200 leading-relaxed"></div>
+    </section>
+
+    <!-- TAB NAVIGATION -->
+    <nav class="flex border-b border-slate-800 text-xs font-medium text-slate-400">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-2.5 tab-active">Tổng quan 3 Sổ</button>
+      <button onclick="switchTab('installments')" id="tab-installments" class="flex-1 py-2.5">Trả góp & Nợ</button>
+      <button onclick="switchTab('assets')" id="tab-assets" class="flex-1 py-2.5">Tích sản</button>
+      <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2.5">Lịch sử GD</button>
+    </nav>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="view-dashboard" class="space-y-4">
+      <!-- 3 LEDGERS SUMMARY CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Sổ 1: Cá nhân -->
+        <div class="glass rounded-2xl p-3.5 border-l-4 border-l-sky-400">
+          <div class="text-[11px] text-slate-400 uppercase font-semibold">1. Dòng tiền Cá nhân</div>
+          <div class="text-lg font-bold text-white mt-1" id="statPersonalNet">0 ₫</div>
+          <div class="mt-2 space-y-0.5 text-[11px]">
+            <div class="flex justify-between text-emerald-400"><span>Thu cá nhân:</span><span id="statPersonalIn">0 ₫</span></div>
+            <div class="flex justify-between text-rose-400"><span>Chi sinh hoạt + Góp:</span><span id="statPersonalOut">0 ₫</span></div>
+          </div>
+        </div>
+
+        <!-- Sổ 2: Tích sản -->
+        <div class="glass rounded-2xl p-3.5 border-l-4 border-l-emerald-400">
+          <div class="text-[11px] text-slate-400 uppercase font-semibold">2. Vốn Tích sản ròng</div>
+          <div class="text-lg font-bold text-emerald-400 mt-1" id="statAssetTotal">0 ₫</div>
+          <div class="mt-2 space-y-0.5 text-[11px]">
+            <div class="flex justify-between text-slate-300"><span>Nạp tháng này:</span><span id="statAssetMonth">0 ₫</span></div>
+            <div class="flex justify-between text-sky-300"><span>Tỷ lệ tích sản:</span><span id="statSavingRate">0%</span></div>
+          </div>
+        </div>
+
+        <!-- Sổ 3: Mua hộ & Công ty -->
+        <div class="glass rounded-2xl p-3.5 border-l-4 border-l-amber-400">
+          <div class="text-[11px] text-slate-400 uppercase font-semibold">3. Tạm ứng / Mua hộ</div>
+          <div class="text-lg font-bold text-amber-400 mt-1" id="statEscrowPending">0 ₫</div>
+          <div class="mt-2 space-y-0.5 text-[11px]">
+            <div class="flex justify-between text-slate-300"><span>Đã ứng ra:</span><span id="statEscrowOut">0 ₫</span></div>
+            <div class="flex justify-between text-emerald-400"><span>Đã thu hồi:</span><span id="statEscrowIn">0 ₫</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WATERFALL BUDGET & GUARDRAILS -->
+      <div class="glass rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Kiểm soát Trần & Nguyên tắc Waterfall</h2>
+          <span id="debtStatusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300">An toàn</span>
+        </div>
+
+        <!-- Progress 1: Trần trả góp 25% lương cố định -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300">Nghĩa vụ trả góp / tháng (Trần 25% lương cứng)</span>
+            <span class="font-semibold" id="installmentCapText">0 / 4.375.000 ₫</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div id="installmentCapBar" class="h-full bg-sky-400 transition-all" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Progress 2: Mục tiêu tích sản tối thiểu -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300">Mục tiêu Tích sản tháng (Tối thiểu 4.000.000 ₫)</span>
+            <span class="font-semibold text-emerald-400" id="assetGoalText">0 / 4.000.000 ₫</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div id="assetGoalBar" class="h-full bg-emerald-400 transition-all" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Progress 3: Trần giải trí / Vietlott -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300">Trần Giải trí & Vietlott (Tối đa 150.000 ₫/tháng)</span>
+            <span class="font-semibold text-amber-300" id="funCapText">0 / 150.000 ₫</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div id="funCapBar" class="h-full bg-amber-400 transition-all" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNVERIFIED / ESCROW ALERTS -->
+      <div id="alertsBox" class="space-y-2"></div>
+    </div>
+
+    <!-- TAB 2: INSTALLMENTS -->
+    <div id="view-installments" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">Kế hoạch Trả góp đang chạy</h2>
+          <p class="text-xs text-slate-400">Tách tổng nợ cam kết khỏi dòng tiền mặt hàng tháng</p>
+        </div>
+        <button onclick="openModal('addInstallmentModal')" class="px-3 py-1.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-semibold">
+          + Thêm khoản góp
+        </button>
+      </div>
+      <div id="installmentList" class="space-y-2.5"></div>
+    </div>
+
+    <!-- TAB 3: ASSETS -->
+    <div id="view-assets" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white">Danh mục Tài sản Tích lũy (Asset Vault)</h2>
+          <p class="text-xs text-slate-400">Chứng chỉ quỹ, Cổ phiếu, Chơi họ & Hạ tầng sinh lợi</p>
+        </div>
+        <button onclick="openModal('addAssetModal')" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-semibold">
+          + Cập nhật tài sản
+        </button>
+      </div>
+      <div id="assetList" class="space-y-2.5"></div>
+    </div>
+
+    <!-- TAB 4: HISTORY -->
+    <div id="view-history" class="hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <select id="filterLedger" onchange="renderHistory()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          <option value="ALL">Tất cả 3 Sổ</option>
+          <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
+          <option value="ASSET">Sổ 2: Tích sản & Đầu tư</option>
+          <option value="ESCROW">Sổ 3: Mua hộ & Công ty</option>
+        </select>
+        <span class="text-xs text-slate-400" id="txCountLabel">0 giao dịch</span>
+      </div>
+      <div id="txHistoryList" class="space-y-2"></div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: PRE-PURCHASE AI COACH -->
+  <div id="preBuyModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-amber-300 text-sm">🛡️ AI Thẩm định Trước Khi Xuống Tiền</h3>
+        <button onclick="closeModal('preBuyModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="space-y-3">
+        <input id="preBuyItem" type="text" placeholder="Tên món đồ / dịch vụ định mua..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        <input id="preBuyPrice" type="number" placeholder="Số tiền (VNĐ)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        <select id="preBuyType" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+          <option value="ONE_TIME">Trả thẳng 1 lần</option>
+          <option value="INSTALLMENT">Mua trả góp (chia kỳ)</option>
+        </select>
+        <button onclick="runPrePurchaseCheck()" id="preBuyBtn" class="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm">
+          Phân tích Chi phí Cơ hội & Ra phán quyết
+        </button>
+      </div>
+      <div id="preBuyResult" class="hidden p-3.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-slate-200 leading-relaxed"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANUAL TRANSACTION -->
+  <div id="manualTxModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-sm">Thêm giao dịch thủ công</h3>
+        <button onclick="closeModal('manualTxModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <input id="mDate" type="date" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <select id="mLedger" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+        <option value="PERSONAL">Sổ 1: Cá nhân & Gia đình</option>
+        <option value="ASSET">Sổ 2: Tích sản (CCQ / CK / Chơi họ)</option>
+        <option value="ESCROW">Sổ 3: Mua hộ / Chi phí Công ty</option>
+      </select>
+      <select id="mDirection" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+        <option value="OUT">Chi ra / Nạp tích sản</option>
+        <option value="IN">Thu về / Hoàn ứng</option>
+      </select>
+      <input id="mCategory" type="text" placeholder="Danh mục (VD: Ăn uống, Lương cố định, CCQ...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="mAmount" type="number" placeholder="Số tiền (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="mMemo" type="text" placeholder="Ghi chú chi tiết (Bắt buộc nếu > 1 triệu)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <button onclick="saveManualTx()" class="w-full py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu giao dịch</button>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD INSTALLMENT -->
+  <div id="addInstallmentModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-sm">Thêm Khoản Trả Góp</h3>
+        <button onclick="closeModal('addInstallmentModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <input id="instTitle" type="text" placeholder="Tên khoản trả góp (VD: Hệ thống NLMT, Sửa nhà...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="instTotal" type="number" placeholder="Tổng giá trị gốc (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="instMonthly" type="number" placeholder="Số tiền trả góp mỗi tháng (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <div class="grid grid-cols-2 gap-2">
+        <input id="instMonths" type="number" placeholder="Tổng số kỳ (tháng)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        <input id="instPaid" type="number" placeholder="Số kỳ đã trả" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      </div>
+      <button onclick="saveInstallment()" class="w-full py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu kế hoạch trả góp</button>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD ASSET -->
+  <div id="addAssetModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-sm">Cập nhật Danh mục Tài sản</h3>
+        <button onclick="closeModal('addAssetModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <input id="asName" type="text" placeholder="Tên tài sản (VD: Chứng chỉ quỹ, Cổ phiếu, Chơi họ...)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="asInvested" type="number" placeholder="Tổng vốn gốc đã nạp (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <input id="asCurrent" type="number" placeholder="Giá trị thị trường hiện tại (VNĐ)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      <button onclick="saveAsset()" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">Lưu tài sản</button>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS & IMPORT/EXPORT -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-5 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-sm">⚙️ Cấu hình AI & Dữ liệu</h3>
+        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="space-y-2">
+        <label class="text-xs text-slate-300 font-medium">Gemini API Key (Lưu cục bộ trên trình duyệt)</label>
+        <input id="cfgApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] text-slate-400">Lương cố định/tháng</label>
+          <input id="cfgFixedSalary" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400">Mục tiêu tích sản/tháng</label>
+          <input id="cfgAssetGoal" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" />
+        </div>
+      </div>
+      <button onclick="saveSettings()" class="w-full py-2 rounded-xl bg-sky-500 text-slate-950 font-bold text-sm">Lưu cấu hình</button>
+
+      <div class="border-t border-slate-800 pt-3 space-y-2">
+        <div class="text-xs font-semibold text-slate-300">Chuyển đổi & Sao lưu Dữ liệu</div>
+        <label class="block w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-center text-xs text-sky-300 cursor-pointer border border-slate-700">
+          📥 Import file CSV Komorebi Kakeibo cũ
+          <input type="file" accept=".csv" class="hidden" onchange="importKomorebiCSV(event)" />
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="exportBackup()" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-emerald-300">📤 Xuất Backup JSON</button>
+          <button onclick="resetDemoData()" class="py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-xs text-rose-300">🗑️ Reset dữ liệu mẫu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ==================== STATE & STORAGE ====================
+const STORAGE_KEY = 'finguard_ai_state_v1';
+
+const defaultState = {
+  settings: {
+    apiKey: '',
+    fixedSalary: 17500000,
+    assetGoal: 4000000
+  },
+  transactions: [
+    { id: 1, date: '2026-11-09', amount: 6000000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 1', verified: true },
+    { id: 2, date: '2026-11-13', amount: 10850000, direction: 'IN', ledger: 'PERSONAL', category: 'Tiền lương', memo: 'Lương đợt 2', verified: true },
+    { id: 3, date: '2026-11-13', amount: 2000000, direction: 'OUT', ledger: 'ASSET', category: 'Chơi họ', memo: 'Đóng họ định kỳ T11', verified: true },
+    { id: 4, date: '2026-11-16', amount: 1000000, direction: 'OUT', ledger: 'ASSET', category: 'Chứng chỉ quỹ', memo: 'Mua CCQ định kỳ', verified: true },
+    { id: 5, date: '2026-11-21', amount: 4800000, direction: 'OUT', ledger: 'PERSONAL', category: 'Đi lại', memo: 'Sửa xe ô tô', verified: true },
+    { id: 6, date: '2026-11-22', amount: 697925, direction: 'OUT', ledger: 'ESCROW', category: 'Mua hộ', memo: 'Chênh lệch mua hộ tồn đọng chờ thu hồi', verified: true }
+  ],
+  installments: [
+    { id: 101, title: 'Hệ thống Điện NLMT (Pin + Biến tần)', total: 47281755, monthly: 2150000, months: 12, paid: 8 },
+    { id: 102, title: 'Khoản gia đình / Sửa nhà (T8)', total: 27000000, monthly: 2250000, months: 12, paid: 3 }
+  ],
+  assets: [
+    { id: 201, name: 'Chứng chỉ quỹ & Cổ phiếu', invested: 17635000, current: 18450000 },
+    { id: 202, name: 'Quỹ Chơi họ tích lũy', invested: 14000000, current: 14000000 },
+    { id: 203, name: 'Hạ tầng NLMT (Tài sản giảm tiền điện)', invested: 47281755, current: 45000000 }
+  ]
+};
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState;
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderAll();
+}
+
+function formatVND(num) {
+  return new Intl.NumberFormat('vi-VN').format(Math.round(num || 0)) + ' ₫';
+}
+
+function getCurrentMonthPrefix() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// ==================== CORE CALCULATIONS & RENDER ====================
+function renderAll() {
+  const monthPrefix = getCurrentMonthPrefix();
+  document.getElementById('headerMonthLabel').innerText = `Tháng ${monthPrefix.split('-')[1]}/${monthPrefix.split('-')[0]}`;
+
+  const monthTxs = state.transactions.filter(t => t.date.startsWith(monthPrefix));
+
+  // Sổ 1: Personal
+  const pIn = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
+  const pOutDirect = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
+  const activeInstMonthly = state.installments.filter(i => i.paid < i.months).reduce((s, i) => s + i.monthly, 0);
+  const pOutTotal = pOutDirect + activeInstMonthly;
+
+  document.getElementById('statPersonalIn').innerText = formatVND(pIn);
+  document.getElementById('statPersonalOut').innerText = formatVND(pOutTotal);
+  const pNet = pIn - pOutTotal;
+  const pNetEl = document.getElementById('statPersonalNet');
+  pNetEl.innerText = (pNet >= 0 ? '+' : '') + formatVND(pNet);
+  pNetEl.className = `text-lg font-bold mt-1 ${pNet >= 0 ? 'text-white' : 'text-rose-400'}`;
+
+  // Sổ 2: Asset
+  const assetTotal = state.assets.reduce((s, a) => s + a.current, 0);
+  const assetMonth = monthTxs.filter(t => t.ledger === 'ASSET' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
+  const savingRate = pIn > 0 ? Math.round((assetMonth / pIn) * 100) : 0;
+
+  document.getElementById('statAssetTotal').innerText = formatVND(assetTotal);
+  document.getElementById('statAssetMonth').innerText = formatVND(assetMonth);
+  document.getElementById('statSavingRate').innerText = `${savingRate}% thu nhập`;
+
+  // Sổ 3: Escrow
+  const escOut = state.transactions.filter(t => t.ledger === 'ESCROW' && t.direction === 'OUT').reduce((s, t) => s + t.amount, 0);
+  const escIn = state.transactions.filter(t => t.ledger === 'ESCROW' && t.direction === 'IN').reduce((s, t) => s + t.amount, 0);
+  const escPending = Math.max(0, escOut - escIn);
+
+  document.getElementById('statEscrowOut').innerText = formatVND(escOut);
+  document.getElementById('statEscrowIn').innerText = formatVND(escIn);
+  document.getElementById('statEscrowPending').innerText = formatVND(escPending);
+
+  // Guardrails Progress
+  const maxInstCap = state.settings.fixedSalary * 0.25;
+  const instPct = Math.min(100, Math.round((activeInstMonthly / maxInstCap) * 100));
+  document.getElementById('installmentCapText').innerText = `${formatVND(activeInstMonthly)} / ${formatVND(maxInstCap)}`;
+  const instBar = document.getElementById('installmentCapBar');
+  instBar.style.width = `${instPct}%`;
+  instBar.className = `h-full transition-all ${activeInstMonthly > maxInstCap ? 'bg-rose-500' : 'bg-sky-400'}`;
+
+  const badge = document.getElementById('debtStatusBadge');
+  if (activeInstMonthly > maxInstCap) {
+    badge.innerText = '🚨 Vượt trần nợ 25% — Khóa trả góp mới';
+    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/20 text-rose-300';
+  } else {
+    badge.innerText = '✅ Dòng tiền an toàn';
+    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300';
+  }
+
+  const assetGoalPct = Math.min(100, Math.round((assetMonth / state.settings.assetGoal) * 100));
+  document.getElementById('assetGoalText').innerText = `${formatVND(assetMonth)} / ${formatVND(state.settings.assetGoal)}`;
+  document.getElementById('assetGoalBar').style.width = `${assetGoalPct}%`;
+
+  const funSpent = monthTxs.filter(t => t.ledger === 'PERSONAL' && t.direction === 'OUT' && /vietlott|vé số|giải trí/i.test(t.category + ' ' + t.memo)).reduce((s, t) => s + t.amount, 0);
+  const funPct = Math.min(100, Math.round((funSpent / 150000) * 100));
+  document.getElementById('funCapText').innerText = `${formatVND(funSpent)} / 150.000 ₫`;
+  document.getElementById('funCapBar').style.width = `${funPct}%`;
+
+  // Alerts (Giao dịch > 1tr thiếu memo hoặc Công nợ mua hộ chưa thu hồi)
+  const alertsBox = document.getElementById('alertsBox');
+  alertsBox.innerHTML = '';
+  const unverified = state.transactions.filter(t => t.amount >= 1000000 && (!t.memo || t.memo.trim() === ''));
+  if (unverified.length > 0) {
+    alertsBox.innerHTML += `<div class="p-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-xs text-rose-200">
+      ⚠️ Có <b>${unverified.length} giao dịch lớn (&ge; 1 triệu)</b> chưa có ghi chú rõ ràng. Hãy cập nhật để tránh thất thoát dấu vết.
+    </div>`;
+  }
+  if (escPending > 0) {
+    alertsBox.innerHTML += `<div class="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-xs text-amber-200">
+      📌 Đang có <b>${formatVND(escPending)}</b> tiền mua hộ / tạm ứng công ty chưa thu hồi về ví.
+    </div>`;
+  }
+
+  renderInstallments();
+  renderAssets();
+  renderHistory();
+}
+
+function renderInstallments() {
+  const list = document.getElementById('installmentList');
+  list.innerHTML = state.installments.map(item => {
+    const remainMonths = Math.max(0, item.months - item.paid);
+    const remainDebt = remainMonths * item.monthly;
+    const pct = Math.round((item.paid / item.months) * 100);
+    return `
+      <div class="glass rounded-2xl p-3.5 space-y-2">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="font-semibold text-sm text-white">${item.title}</div>
+            <div class="text-[11px] text-slate-400">Tổng gốc: ${formatVND(item.total)} • Còn ${remainMonths}/${item.months} kỳ</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-sky-400 text-sm">${formatVND(item.monthly)}/tháng</div>
+            <div class="text-[11px] text-slate-400">Dư nợ: ${formatVND(remainDebt)}</div>
+          </div>
+        </div>
+        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div class="h-full bg-sky-400" style="width:${pct}%"></div>
+        </div>
+        <div class="flex justify-end gap-2 pt-1">
+          <button onclick="payInstallmentPeriod(${item.id})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-emerald-300">+ Ghi nhận trả 1 kỳ</button>
+          <button onclick="deleteInstallment(${item.id})" class="px-2 py-1 rounded-lg text-[11px] text-slate-500 hover:text-rose-400">Xóa</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderAssets() {
+  const list = document.getElementById('assetList');
+  list.innerHTML = state.assets.map(a => {
+    const pnl = a.current - a.invested;
+    const pnlPct = a.invested > 0 ? ((pnl / a.invested) * 100).toFixed(1) : 0;
+    return `
+      <div class="glass rounded-2xl p-3.5 flex justify-between items-center">
+        <div>
+          <div class="font-semibold text-sm text-white">${a.name}</div>
+          <div class="text-[11px] text-slate-400">Vốn gốc: ${formatVND(a.invested)}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-emerald-400 text-sm">${formatVND(a.current)}</div>
+          <div class="text-[11px] ${pnl >= 0 ? 'text-emerald-300' : 'text-rose-400'}">${pnl >= 0 ? '+' : ''}${formatVND(pnl)} (${pnlPct}%)</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const filter = document.getElementById('filterLedger').value;
+  const txs = [...state.transactions]
+    .filter(t => filter === 'ALL' || t.ledger === filter)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+  document.getElementById('txCountLabel').innerText = `${txs.length} giao dịch`;
+  const badgeMap = {
+    PERSONAL: '<span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px]">Cá nhân</span>',
+    ASSET: '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Tích sản</span>',
+    ESCROW: '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px]">Mua hộ/Cty</span>'
+  };
+
+  document.getElementById('txHistoryList').innerHTML = txs.map(t => `
+    <div class="glass rounded-xl p-3 flex justify-between items-center">
+      <div class="space-y-0.5">
+        <div class="flex items-center gap-1.5">
+          ${badgeMap[t.ledger]}
+          <span class="font-semibold text-xs text-white">${t.category}</span>
+          <span class="text-[10px] text-slate-500">${t.date}</span>
+        </div>
+        <div class="text-xs text-slate-400">${t.memo || '<span class="text-rose-400 italic">Chưa có ghi chú</span>'}</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-xs ${t.direction === 'IN' ? 'text-emerald-400' : (t.ledger === 'ASSET' ? 'text-sky-400' : 'text-slate-200')}">
+          ${t.direction === 'IN' ? '+' : '-'}${formatVND(t.amount)}
+        </span>
+        <button onclick="deleteTx(${t.id})" class="text-slate-600 hover:text-rose-400 text-xs">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== GEMINI AI INTEGRATION ====================
+async function callGemini(promptText, isJson = false) {
+  const apiKey = state.settings.apiKey;
+  if (!apiKey) {
+    alert('Vui lòng bấm biểu tượng ⚙️ góc phải để nhập Gemini API Key trước!');
+    openModal('settingsModal');
+    return null;
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const body = {
+    contents: [{ parts: [{ text: promptText }] }],
+    generationConfig: isJson ? { responseMimeType: "application/json" } : {}
+  };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.candidates[0].content.parts[0].text;
+}
+
+async function handleAiInput() {
+  const inputEl = document.getElementById('aiInput');
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('aiSendBtn');
+  const fb = document.getElementById('aiFeedback');
+  btn.disabled = true;
+  btn.innerText = '...';
+
+  const today = new Date().toISOString().split('T')[0];
+  const prompt = `
+Bạn là FinGuard AI — CFO cá nhân quản trị dòng tiền theo 3 sổ độc lập:
+- PERSONAL: Chi tiêu sinh hoạt cá nhân & gia đình (Ăn uống, Đi lại, Y tế, Nhà cửa, Giải trí/Vietlott) hoặc Lương/Thu nhập.
+- ASSET: Nạp Chứng chỉ quỹ (CCQ), Cổ phiếu (CK), Chơi họ, Vàng, Hạ tầng sinh lợi. (direction="OUT" nghĩa là nạp tiền vào tích sản).
+- ESCROW: Mua hộ đồ cho người khác, tạm ứng chi phí công ty (Đất Son, Tohoku, mỏ đá...).
+
+Hãy bóc tách câu nhập liệu sau thành danh sách giao dịch JSON và đưa ra 1 lời khuyên/cảnh báo ngắn gọn (tối đa 2 câu) theo nguyên tắc tiết chế & tích sản.
+Hôm nay là: ${today}.
+Câu nhập liệu: "${text}"
+
+Trả về JSON đúng schema:
+{
+  "transactions": [
+    { "date": "YYYY-MM-DD", "amount": number, "direction": "IN" | "OUT", "ledger": "PERSONAL" | "ASSET" | "ESCROW", "category": "string", "memo": "string" }
+  ],
+  "advice": "string"
+}`;
+
+  try {
+    const raw = await callGemini(prompt, true);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+
+    parsed.transactions.forEach(tx => {
+      state.transactions.push({
+        id: Date.now() + Math.random(),
+        date: tx.date || today,
+        amount: Number(tx.amount),
+        direction: tx.direction,
+        ledger: tx.ledger,
+        category: tx.category,
+        memo: tx.memo,
+        verified: true
+      });
+      // Nếu là nạp tích sản, tự động cộng vào vốn gốc tài sản đầu tiên nếu khớp
+      if (tx.ledger === 'ASSET' && tx.direction === 'OUT' && state.assets.length > 0) {
+        state.assets[0].invested += Number(tx.amount);
+        state.assets[0].current += Number(tx.amount);
+      }
+    });
+
+    saveState();
+    inputEl.value = '';
+    fb.classList.remove('hidden');
+    fb.innerHTML = `✅ Đã ghi <b>${parsed.transactions.length}</b> giao dịch.<br><span class="text-sky-300">💡 FinGuard AI:</span> ${parsed.advice}`;
+  } catch (err) {
+    alert('Lỗi AI: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Ghi';
+  }
+}
+
+async function runPrePurchaseCheck() {
+  const item = document.getElementById('preBuyItem').value.trim();
+  const price = Number(document.getElementById('preBuyPrice').value);
+  const type = document.getElementById('preBuyType').value;
+  if (!item || !price) return alert('Nhập tên món đồ và giá tiền!');
+
+  const btn = document.getElementById('preBuyBtn');
+  const resBox = document.getElementById('preBuyResult');
+  btn.disabled = true;
+  btn.innerText = 'AI đang thẩm định...';
+
+  const activeInst = state.installments.filter(i => i.paid < i.months).reduce((s, i) => s + i.monthly, 0);
+  const maxCap = state.settings.fixedSalary * 0.25;
+  const fv10 = Math.round(price * Math.pow(1.1, 10));
+
+  const prompt = `
+Đóng vai FinGuard AI (CFO kỷ luật thép). Người dùng đang cân nhắc mua:
+- Món đồ: "${item}"
+- Giá: ${price.toLocaleString('vi-VN')} VNĐ (${type === 'INSTALLMENT' ? 'Mua trả góp' : 'Trả thẳng'})
+- Lương cố định: ${state.settings.fixedSalary.toLocaleString('vi-VN')} VNĐ/tháng
+- Nghĩa vụ trả góp hiện tại: ${activeInst.toLocaleString('vi-VN')} VNĐ/tháng (Trần tối đa 25% = ${maxCap.toLocaleString('vi-VN')} VNĐ)
+- Giá trị tương lai nếu đem số tiền này đầu tư tích sản 10 năm (lãi kép 10%/năm): ${fv10.toLocaleString('vi-VN')} VNĐ.
+
+Hãy đưa ra phán quyết ngắn gọn bằng tiếng Việt gồm:
+1. PHÁN QUYẾT: [DUYỆT MUA] hoặc [HOÃN 48 GIỜ] hoặc [TỪ CHỐI - VƯỢT TRẦN NỢ]
+2. Phân tích chi phí cơ hội & tác động dòng tiền (3-4 dòng súc tích, thực tế).`;
+
+  try {
+    const reply = await callGemini(prompt, false);
+    if (reply) {
+      resBox.classList.remove('hidden');
+      resBox.innerHTML = reply.replace(/\n/g, '<br>');
+    }
+  } catch (err) {
+    alert('Lỗi AI: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Phân tích Chi phí Cơ hội & Ra phán quyết';
+  }
+}
+
+// ==================== CRUD & CSV IMPORT ====================
+function saveManualTx() {
+  const date = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
+  const ledger = document.getElementById('mLedger').value;
+  const direction = document.getElementById('mDirection').value;
+  const category = document.getElementById('mCategory').value.trim() || 'Khác';
+  const amount = Number(document.getElementById('mAmount').value);
+  const memo = document.getElementById('mMemo').value.trim();
+
+  if (!amount) return alert('Vui lòng nhập số tiền!');
+  state.transactions.push({ id: Date.now(), date, amount, direction, ledger, category, memo, verified: true });
+  saveState();
+  closeModal('manualTxModal');
+}
+
+function deleteTx(id) {
+  if (!confirm('Xóa giao dịch này?')) return;
+  state.transactions = state.transactions.filter(t => t.id !== id);
+  saveState();
+}
+
+function saveInstallment() {
+  const title = document.getElementById('instTitle').value.trim();
+  const total = Number(document.getElementById('instTotal').value);
+  const monthly = Number(document.getElementById('instMonthly').value);
+  const months = Number(document.getElementById('instMonths').value);
+  const paid = Number(document.getElementById('instPaid').value) || 0;
+  if (!title || !monthly || !months) return alert('Nhập đủ thông tin trả góp!');
+  state.installments.push({ id: Date.now(), title, total: total || monthly * months, monthly, months, paid });
+  saveState();
+  closeModal('addInstallmentModal');
+}
+
+function payInstallmentPeriod(id) {
+  const item = state.installments.find(i => i.id === id);
+  if (item && item.paid < item.months) {
+    item.paid += 1;
+    saveState();
+  }
+}
+
+function deleteInstallment(id) {
+  if (!confirm('Xóa khoản trả góp này?')) return;
+  state.installments = state.installments.filter(i => i.id !== id);
+  saveState();
+}
+
+function saveAsset() {
+  const name = document.getElementById('asName').value.trim();
+  const invested = Number(document.getElementById('asInvested').value);
+  const current = Number(document.getElementById('asCurrent').value);
+  if (!name) return alert('Nhập tên tài sản!');
+  state.assets.push({ id: Date.now(), name, invested, current: current || invested });
+  saveState();
+  closeModal('addAssetModal');
+}
+
+function saveSettings() {
+  state.settings.apiKey = document.getElementById('cfgApiKey').value.trim();
+  state.settings.fixedSalary = Number(document.getElementById('cfgFixedSalary').value) || 17500000;
+  state.settings.assetGoal = Number(document.getElementById('cfgAssetGoal').value) || 4000000;
+  saveState();
+  closeModal('settingsModal');
+}
+
+function importKomorebiCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/);
+    let mode = '';
+    const catMap = {};
+    const rawRows = [];
+
+    for (const line of lines) {
+      if (line.startsWith('#')) { mode = line.trim(); continue; }
+      if (!line.trim()) continue;
+      if (mode === '#DAILY_DATAS' && !line.startsWith('inputDateString')) {
+        const parts = line.split(',');
+        if (parts.length >= 5) {
+          rawRows.push({
+            dateRaw: parts[0],
+            amount: Number(parts[1]),
+            memo: parts[2].replace(/^"|"$/g, ''),
+            catId: parts[3],
+            type: Number(parts[4])
+          });
+        }
+      } else if (mode === '#CATEGORIES' && !line.startsWith('id,')) {
+        const parts = line.split(',');
+        if (parts.length >= 2) catMap[parts[0]] = parts[1].replace(/^"|"$/g, '');
+      }
+    }
+
+    let importedCount = 0;
+    rawRows.forEach((r, idx) => {
+      const catName = catMap[r.catId] || 'Khác';
+      const dateParts = r.dateRaw.split('/');
+      const isoDate = dateParts.length === 3
+        ? `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`
+        : r.dateRaw;
+
+      // Tự động phân loại 3 sổ thông minh từ dữ liệu Komorebi
+      let ledger = 'PERSONAL';
+      if (['Mua hộ', 'Tiền mua hộ đồ', 'Đất Son'].includes(catName) || /mỏ đá|cty|triển lãm/i.test(r.memo)) {
+        ledger = 'ESCROW';
+      } else if (['Đầu tư', 'Thu từ đầu tư', 'NLMT'].includes(catName) && !/vietlott|vl|vé số/i.test(r.memo)) {
+        ledger = 'ASSET';
+      }
+
+      state.transactions.push({
+        id: Date.now() + idx,
+        date: isoDate,
+        amount: r.amount,
+        direction: r.type === 1 ? 'IN' : 'OUT',
+        ledger,
+        category: catName,
+        memo: r.memo,
+        verified: true
+      });
+      importedCount++;
+    });
+
+    saveState();
+    alert(`Đã import thành công ${importedCount} giao dịch và tự động phân loại vào 3 sổ!`);
+    closeModal('settingsModal');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `FinGuard_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+function resetDemoData() {
+  if (!confirm('Khôi phục về dữ liệu mẫu ban đầu?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+// ==================== UI NAVIGATION & MODALS ====================
+function switchTab(tab) {
+  ['dashboard', 'installments', 'assets', 'history'].forEach(t => {
+    document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
+    document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === tab);
+  });
+}
+
+function openModal(id) {
+  if (id === 'settingsModal') {
+    document.getElementById('cfgApiKey').value = state.settings.apiKey;
+    document.getElementById('cfgFixedSalary').value = state.settings.fixedSalary;
+    document.getElementById('cfgAssetGoal').value = state.settings.assetGoal;
+  }
+  if (id === 'manualTxModal') {
+    document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
+  }
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+// Init
+renderAll();
+</script>
+</body>
+</html>
